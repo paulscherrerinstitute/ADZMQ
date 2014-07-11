@@ -1,5 +1,5 @@
 cd ../psiBuild
-require "ADZMQ", "wang_x1"
+require "ADZMQ"
 require "ADPlugin"
 
 cd ../tests
