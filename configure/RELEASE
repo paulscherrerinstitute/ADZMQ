@@ -24,15 +24,24 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 # If using the sequencer, point SNCSEQ at its top directory:
 #SNCSEQ=$(EPICS_BASE)/../modules/soft/seq
 
-SUPPORT=/Users/wang/epics/synApps/support
+SUPPORT=/home/scratch/synApps_5_7/support/
 
 # asyn
-ASYN=$(SUPPORT)/asyn-4-22
+ASYN=$(SUPPORT)/asyn-4-21
+
+BUSY=$(SUPPORT)/busy-1-6
+
+CALC=$(SUPPORT)/calc-3-2
+
+SSCAN=$(SUPPORT)/sscan-2-9
+
+AUTOSAVE=$(SUPPORT)/autosave-5-1
+
 # AREA_DETECTOR is needed for base and plugins
 AREA_DETECTOR=$(SUPPORT)/areaDetector-1-9-1
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/Users/wang/epics/base-3.14.12.4
+EPICS_BASE=/home/scratch/base-3.14.12.4
 
 # Set RULES here if you want to take build rules from somewhere
 # other than EPICS_BASE:
