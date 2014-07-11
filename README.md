@@ -6,6 +6,18 @@ This project marries ZeroMQ with areaDetector framework, in two folds:
 * a driver pulls data from a ZeroMQ server and generates NDArray.
 * a plugin publishes NDArray as ZeroMQ server.
 
+Build
+-----
+If you build under PSI environment, 
+```bash
+    cd psiBuild
+    make
+```
+
+Otherwise, use the standard EPICS base system. Edit *configure/RELEASE* and then run
+```bash
+    make
+```
 
 Test
 ----
