@@ -196,7 +196,7 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
      * This driver can block (because writing a file can be slow), and it is not multi-device.  
      * Set autoconnect to 1.  priority and stacksize can be 0, which will use defaults. */
     : NDPluginDriver(portName, queueSize, blockingCallbacks, 
-                     NDArrayPort, NDArrayAddr, maxAddr, NUM_NDPLUGIN_ZMQ_PARAMS, maxBuffers, maxMemory, 
+                     NDArrayPort, NDArrayAddr, 1, 0, maxBuffers, maxMemory, 
                      asynGenericPointerMask, asynGenericPointerMask,
                      0, 1, priority, stackSize)
 {
