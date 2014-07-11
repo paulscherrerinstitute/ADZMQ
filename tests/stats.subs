@@ -1,0 +1,40 @@
+# Create 4 ROI plugins
+file NDPluginBase.template {
+pattern
+    { P        R          PORT        ADDR   TIMEOUT NDARRAY_PORT NDARRAY_ADDR}
+    { 13ZMQ1:  ROI1:      ROI1        0      1       ZMQ1          0           }
+    { 13ZMQ1:  ROI2:      ROI2        0      1       ZMQ1          0           }
+    { 13ZMQ1:  ROI3:      ROI3        0      1       ZMQ1          0           }
+    { 13ZMQ1:  ROI4:      ROI4        0      1       ZMQ1          0           }
+}
+
+file NDROI.template {
+pattern
+    { P        R          PORT         ADDR   TIMEOUT }
+    { 13ZMQ1:  ROI1:      ROI1         0      1       }
+    { 13ZMQ1:  ROI2:      ROI2         0      1       }
+    { 13ZMQ1:  ROI3:      ROI3         0      1       }
+    { 13ZMQ1:  ROI4:      ROI4         0      1       }
+}
+
+# Create 5 statistics plugins
+file NDPluginBase.template {
+pattern
+    { P         R          PORT        ADDR   TIMEOUT NDARRAY_PORT NDARRAY_ADDR}
+    { 13ZMQ1:   Stats1:    STATS1      0      1       ROI1         0           }
+    { 13ZMQ1:   Stats2:    STATS2      0      1       ROI2         0           }
+    { 13ZMQ1:   Stats3:    STATS3      0      1       ROI3         0           }
+    { 13ZMQ1:   Stats4:    STATS4      0      1       ROI4         0           }
+    { 13ZMQ1:   Stats5:    STATS5      0      1       ZMQ1         0           }
+}
+
+
+file NDStats.template {
+pattern 
+    { P        R         PORT         ADDR  TIMEOUT   HIST_SIZE   XSIZE    YSIZE NCHANS}
+    { 13ZMQ1:  Stats1:   STATS1       0     1         256         2048     2048  2048}
+    { 13ZMQ1:  Stats2:   STATS2       0     1         256         2048     2048  2048}
+    { 13ZMQ1:  Stats3:   STATS3       0     1         256         2048     2048  2048}
+    { 13ZMQ1:  Stats4:   STATS4       0     1         256         2048     2048  2048}
+    { 13ZMQ1:  Stats5:   STATS5       0     1         256         2048     2048  2048}
+}

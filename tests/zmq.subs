@@ -1,0 +1,36 @@
+file ADBase.template {
+pattern
+    { P           R      PORT   ADDR TIMEOUT }
+    { 13ZMQ1:     cam1:  ZMQ1   0    1       }
+}
+
+file NDPluginBase.template {
+pattern
+    { P           R        PORT     ADDR  TIMEOUT  NDARRAY_PORT  NDARRAY_ADDR }
+    { 13ZMQ1:     image1:  Image1   0     1        ZMQ1          0            }
+    { 13ZMQ1:     HDF1:    FileHDF1 0     1        ZMQ1          0            }
+    { 13ZMQ1:     ZMQ1:    NDZMQ1   0     1        ZMQ1          0            }
+}
+
+file NDStdArrays.template {
+pattern
+    { P           R        PORT    ADDR  TIMEOUT  TYPE   FTVL   NELEMENTS }
+    { 13ZMQ1:     image1:  Image1  0     1        Int8   UCHAR  3145728   }
+}
+
+file NDFile.template {
+pattern
+    { P           R       PORT     ADDR  TIMEOUT}
+    { 13ZMQ1:     HDF1:   FileHDF1 0     1      }
+}
+
+# HDF5 specific template
+file NDFileHDF5.template {
+{
+    P       = 13ZMQ1:
+    R       = HDF1:
+    PORT    = FileHDF1
+    ADDR    = 0
+    TIMEOUT = 1
+}
+}

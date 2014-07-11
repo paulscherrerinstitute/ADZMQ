@@ -1,0 +1,27 @@
+cd ../psiBuild
+require "ADZMQ", "wang_x1"
+require "ADPlugin"
+
+cd ../tests
+ZMQDriverConfig("ZMQ1", "tcp://127.0.0.1:5432", -1, -1)
+
+NDStdArraysConfigure("Image1", 3, 0, "ZMQ1", 0)
+
+NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "ZMQ1", 0)
+
+NDROIConfigure("ROI1", 20, 0, "ZMQ1", 0, -1, -1)
+NDROIConfigure("ROI2", 20, 0, "ZMQ1", 0, -1, -1)
+NDROIConfigure("ROI3", 20, 0, "ZMQ1", 0, -1, -1)
+NDROIConfigure("ROI4", 20, 0, "ZMQ1", 0, -1, -1)
+
+NDStatsConfigure("STATS1", 20, 0, "ROI1", 0, -1, -1)
+NDStatsConfigure("STATS2", 20, 0, "ROI2", 0, -1, -1)
+NDStatsConfigure("STATS3", 20, 0, "ROI3", 0, -1, -1)
+NDStatsConfigure("STATS4", 20, 0, "ROI4", 0, -1, -1)
+NDStatsConfigure("STATS5", 20, 0, "ZMQ1",  0, -1, -1)
+
+NDFileHDF5Configure("FileHDF1", 20, 0, "ZMQ1", 0)
+
+dbLoadTemplate("zmq.subs")
+dbLoadTemplate("stats.subs")
+

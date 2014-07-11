@@ -1,0 +1,7 @@
+ADBase.template         G/DRV/areaDetector/templates
+NDPluginBase.template   G/DRV/areaDetector/templates
+NDROI.template          G/DRV/areaDetector/templates
+NDStats.template        G/DRV/areaDetector/templates
+NDStdArrays.template    G/DRV/areaDetector/templates
+NDFile.template         G/DRV/areaDetector/templates
+NDFileHDF5.template     G/DRV/areaDetector/templates
