@@ -14,7 +14,7 @@ After building, the examplar IOC *zmqApp* is created. Follow the test procedure,
 
 1. Start the IOC, 
    ```bash
-   cd iocBoot\iocZMQ
+   cd iocBoot/iocZMQ
    ../../bin/linux-x86_64/zmqApp st.cmd
    ```
 
