@@ -1,7 +1,7 @@
 ADZMQ
 =====
 
-This project marries ZeroMQ with areaDetector framework, in two folds:
+This project attempts to integrate ZeroMQ with areaDetector framework, in two folds:
 
 * a driver pulls data from a ZeroMQ server and generates NDArray.
 * a plugin publishes NDArray as ZeroMQ server.
