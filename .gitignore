@@ -19,3 +19,13 @@
 *.exe
 *.out
 *.app
+
+# Build directory
+O.*
+
+# Installed files
+/bin
+/include
+/lib
+/dbd
+
