@@ -508,7 +508,7 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
     /* create the pub socket to disconnect from server */
     this->stopSocket = zmq_socket(this->context, ZMQ_PUB);
-    /* find a free port [7972 - 8000], 7972 is arbitraily chosen */
+    /* find a free port [7972 - 8000], 7972 is arbitrarily chosen */
     for (int i=7972; i<=8000; i++) { 
         sprintf(this->stopHost, "tcp://127.0.0.1:%d", i);
         int rc = zmq_bind(this->stopSocket, this->stopHost);
