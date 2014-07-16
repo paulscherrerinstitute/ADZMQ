@@ -6,6 +6,8 @@ This project attempts to integrate ZeroMQ with areaDetector framework, in two fo
 * a driver pulls data from a ZeroMQ server and generates NDArray.
 * a plugin publishes NDArray as ZeroMQ server.
 
+![Architecture Overview](documentation/Architecture.svg)
+
 Build
 -----
 If you build under PSI environment, 
