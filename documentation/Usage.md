@@ -16,7 +16,7 @@ The second parameter of *ZMQDriverConfigure* is to specify the server address an
 |-----------|----------------------------|
 | PUB/SUB   | tcp://127.0.0.1:5432       |
 | PUSH/PULL | tcp://*:5432 <br />        |
-|           | tcp://127.0.01:4532 PULL   |
+|   ^       | tcp://127.0.01:4532 PULL   |
 
 If the host contains the wildcard, it is assumed to be a puller, otherwise a subscriber.
 If the puller needs to bind on a specific interface, the type must be explicitly specified.
@@ -30,7 +30,7 @@ The second parameter of *NDZMQConfigure* is to specify the server address and pa
 | Pattern   |           Host               |
 |-----------|------------------------------|
 | PUB/SUB   | tcp://*:1234 <br />          |
-|           | tcp://127.0.0.1 PUB          |
+|   ^       | tcp://127.0.0.1 PUB          |
 | PUSH/PULL | tcp://127.0.0.1:5432         |
 
 If the host contains the wildcard, it is assumed to be a publisher, otherwise a pusher.
