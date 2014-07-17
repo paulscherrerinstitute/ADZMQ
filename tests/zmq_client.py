@@ -24,8 +24,9 @@ context = zmq.Context()
 sock = context.socket(stype)
 if stype == zmq.SUB:
     sock.setsockopt(zmq.SUBSCRIBE, '')
-
-sock.connect(args.host)
+    sock.connect(args.host)
+elif stype == zmq.PULL:
+    sock.bind(args.host)
 
 print('Client %s %s'%(args.host,args.stype))
 

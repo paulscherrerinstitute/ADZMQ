@@ -8,6 +8,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--type', dest='stype', type=str, default='PUB')
 parser.add_argument('--host', dest='host', type=str, default='tcp://*:5432')
+parser.add_argument('--rate', dest='rate', type=int, default=1)
 
 args = parser.parse_args()
 if args.stype == 'PUB':
@@ -22,7 +23,11 @@ print("Server %s %s"%(args.host, args.stype))
 
 context = zmq.Context()
 sock = context.socket(stype)
-sock.bind(args.host)
+
+if stype == zmq.PUB:
+    sock.bind(args.host)
+elif stype == zmq.PUSH:
+    sock.connect(args.host)
 
 cols = 800
 rows = 600
@@ -36,7 +41,7 @@ header_t = """{
 
 frame = 0
 while True:
-    time.sleep(1)
+    time.sleep(1./args.rate)
     # generate data
     data = numpy.random.random_integers(0, 255, (rows, cols)).astype(numpy.uint8)
     data[:50,:50] = 255
