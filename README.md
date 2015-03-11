@@ -11,7 +11,7 @@ The ZeroMQ message format is detailed [here](https://docs.google.com/document/d/
 
 Documentation
 -------------
-[Configuration][documentation/Usage.md]
+[Configuration](documentation/Usage.md)
 
 
 Build
