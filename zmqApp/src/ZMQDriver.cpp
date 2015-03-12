@@ -480,8 +480,8 @@ void ZMQDriver::report(FILE *fp, int details)
 
 extern "C" int ZMQDriverConfig(char *portName, /* Port name */
                                const char *serverHost,   /* Host IP address : port */
-                               int maxBuffers, size_t maxMemory,
-                               int priority, int stackSize, int maxPvAPIFrames)
+                               int maxBuffers, int maxMemory,
+                               int priority, int stackSize)
 {
     new ZMQDriver(portName, serverHost, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
@@ -633,7 +633,7 @@ static const iocshFuncDef configZMQDriver = {"ZMQDriverConfig", 6, ZMQDriverConf
 static void configZMQDriverCallFunc(const iocshArgBuf *args)
 {
     ZMQDriverConfig(args[0].sval, args[1].sval, args[2].ival, 
-                    args[3].ival, args[4].ival, args[5].ival, args[6].ival);
+                    args[3].ival, args[4].ival, args[5].ival);
 }
 
 
