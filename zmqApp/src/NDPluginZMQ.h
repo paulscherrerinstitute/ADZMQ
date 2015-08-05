@@ -15,6 +15,8 @@ public:
                  int maxBuffers, size_t maxMemory,
                  int priority, int stackSize);
 
+    ~NDPluginZMQ();
+
     /* These methods override those in the base class */
     virtual void processCallbacks(NDArray *pArray);
 
@@ -25,6 +27,7 @@ private:
     void *context;
     void *socket;
     char serverHost[HOST_NAME_MAX];
+    int socketType;
 };
 
 #define NUM_NDPLUGIN_ZMQ_PARAMS 0

@@ -57,6 +57,7 @@ private:
     void *context; /* ZMQ context */
     void *socket;  /* main socket to ZMQ server */
     void *stopSocket;/* internal pub socket to stop */
+    int socketType;
     epicsEventId startEventId;
 };
 
@@ -296,7 +297,10 @@ void ZMQDriver :: ZMQTask() {
             epicsEventWait(this->startEventId);
             this->lock();
             setIntegerParam(ADNumImagesCounter, 0);
-            zmq_connect(this->socket, this->serverHost);
+            if (this->socketType == ZMQ_SUB)
+                zmq_connect(this->socket, this->serverHost);
+            else if (this->socketType == ZMQ_PULL)
+                zmq_bind(this->socket, this->serverHost);
         }
 
         /* We are acquiring. */
@@ -351,7 +355,10 @@ void ZMQDriver :: ZMQTask() {
             (imageMode == ADImageSingle) ||
             ((imageMode == ADImageMultiple) &&
              (numImagesCounter >= numImages))) {
-            zmq_disconnect(this->socket, this->serverHost);
+            if (this->socketType == ZMQ_SUB)
+                zmq_disconnect(this->socket, this->serverHost);
+            else if (this->socketType == ZMQ_PULL)
+                zmq_unbind(this->socket, this->serverHost);
             setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
                   "%s:%s: acquisition completed\n", driverName, functionName);
@@ -372,16 +379,29 @@ void shutdown (void* arg) {
 
 ZMQDriver :: ~ZMQDriver() {
 
-    zmq_send(stopSocket, "STOP", 4, 0);
-    epicsThreadSleep(1);
+    if (this->socketType == ZMQ_SUB) {
+        /* stop if socket is blocked in receiving */
+        zmq_send(stopSocket, "STOP", 4, 0);
+        epicsThreadSleep(1);
+        /* disconnect from host */
+        zmq_disconnect(socket, serverHost);
+        zmq_disconnect(socket, this->stopHost);
+        zmq_close(socket);
+        /* close stop socket server */
+        zmq_unbind(stopSocket, this->stopHost);
+        zmq_close(stopSocket);
+    } else if (this->socketType == ZMQ_PULL) {
+        /* stop if socket is blocked in receiving */
+        zmq_send(stopSocket, "STOP", 4, 0);
+        epicsThreadSleep(1);
+        /* disconnect stop socket */
+        zmq_disconnect(stopSocket, this->stopHost);
+        zmq_close(stopSocket);
+        /* close socket */
+        zmq_unbind(socket, serverHost);
+        zmq_close(socket);
+    }
 
-    zmq_disconnect(socket, serverHost);
-    zmq_disconnect(socket, this->stopHost);
-    zmq_close(socket);
-
-    zmq_unbind(stopSocket, this->stopHost);
-    zmq_close(stopSocket);
-    
     zmq_ctx_destroy(context);
 }
 
@@ -446,6 +466,8 @@ void ZMQDriver::report(FILE *fp, int details)
         getIntegerParam(ADSizeY, &ny);
         getIntegerParam(NDDataType, &dataType);
         fprintf(fp, "  Server host:       %s\n", this->serverHost);
+        fprintf(fp, "  Socket type:       %d\n", this->socketType);
+        if (this->socketType == ZMQ_SUB)
         fprintf(fp, "  Stop host:         %s\n", this->stopHost);
         fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
         fprintf(fp, "  Data type:         %d\n", dataType);
@@ -458,8 +480,8 @@ void ZMQDriver::report(FILE *fp, int details)
 
 extern "C" int ZMQDriverConfig(char *portName, /* Port name */
                                const char *serverHost,   /* Host IP address : port */
-                               int maxBuffers, size_t maxMemory,
-                               int priority, int stackSize, int maxPvAPIFrames)
+                               int maxBuffers, int maxMemory,
+                               int priority, int stackSize)
 {
     new ZMQDriver(portName, serverHost, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
@@ -470,7 +492,7 @@ extern "C" int ZMQDriverConfig(char *portName, /* Port name */
   * After calling the base class constructor this method creates a thread to collect the detector data, 
   * and sets reasonable default values for the parameters defined in this class, asynNDArrayDriver and ADDriver.
   * \param[in] portName The name of the asyn port driver to be created.
-  * \param[in] serverHost The IP address:port of the ZMQ server.
+  * \param[in] serverHost The address of the ZMQ server, and pattern to be used. transport://address [SUB|PULL].
   * \param[in] maxBuffers The maximum number of NDArray buffers that the NDArrayPool for this driver is 
   *            allowed to allocate. Set this to -1 to allow an unlimited number of buffers.
   * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is 
@@ -488,12 +510,41 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 {
     int status = asynSuccess;
     static const char *functionName = "zmq";
+    char *cp;
+    char type[10] = "";
 
+    /* server host in form of "transport://address [SUB|PULL]"
+     * separate host and type information */
     strcpy(this->serverHost, serverHost);
+    if ((cp=strchr(this->serverHost, ' '))!=NULL) {
+        *cp++ = '\0';
+        strcpy(type, cp);
+    }
+    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0)
+        this->socketType = ZMQ_SUB;
+    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0)
+        this->socketType = ZMQ_PULL;
+    else if (strlen(type) == 0) {
+        /* If type is not specified, make a guess.
+         * If "*" is found in host address, then it is assumed to be a PULL server type
+         * */
+        if (strchr(this->serverHost, '*')!=NULL) {
+            this->socketType = ZMQ_PULL;
+        } else {
+            this->socketType = ZMQ_SUB;
+        }
+    } else {
+        fprintf(stderr, "%s: Unsupported socket type %s\n", functionName, type);
+        return;
+    }
 
     /* Set some default values for parameters */
     status =  setStringParam (ADManufacturer, "ZMQ Driver");
-    status |= setStringParam (ADModel, "ZeroMQ");
+    if (this->socketType == ZMQ_SUB) {
+    status |= setStringParam (ADModel, "ZeroMQ SUB");
+    } else if (this->socketType == ZMQ_PULL) {
+    status |= setStringParam (ADModel, "ZeroMQ PULL");
+    }
     if (status) {
         fprintf(stderr, "%s: unable to set camera parameters\n", functionName);
         return;
@@ -501,29 +552,45 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
     /* initialize ZMQ */
     this->context = zmq_ctx_new();
-    /* create the sub socket to server host */
-    this->socket = zmq_socket(this->context, ZMQ_SUB);
-    /* filter the message from the server host */
-    zmq_setsockopt(this->socket, ZMQ_SUBSCRIBE, "{", 1);
 
-    /* create the pub socket to disconnect from server */
-    this->stopSocket = zmq_socket(this->context, ZMQ_PUB);
-    /* find a free port [7972 - 8000], 7972 is arbitraily chosen */
-    for (int i=7972; i<=8000; i++) { 
-        sprintf(this->stopHost, "tcp://127.0.0.1:%d", i);
+    /* create the main socket */
+    this->socket = zmq_socket(this->context, this->socketType);
+
+    if (this->socketType == ZMQ_SUB) {
+        /* filter the message from the server host */
+        zmq_setsockopt(this->socket, ZMQ_SUBSCRIBE, "{", 1);
+
+        /* create the pub socket to disconnect from server */
+        this->stopSocket = zmq_socket(this->context, ZMQ_PUB);
+        sprintf(this->stopHost, "inproc://%s", portName);
         int rc = zmq_bind(this->stopSocket, this->stopHost);
-        if (rc == 0) 
-            break;
-        if (i == 8000) {
-            fprintf(stderr, "%s: unable to find a free port, %s\n", 
-                functionName, 
-                zmq_strerror(zmq_errno()));
-            return;
+        if (rc != 0) {
+            fprintf(stderr, "%s: unable to find a free port, %s\n",
+                    functionName,
+                    zmq_strerror(zmq_errno()));
+                return;
         }
+        /* connect to the stop pub server */
+        zmq_connect(this->socket, stopHost);
+        zmq_setsockopt(this->socket, ZMQ_SUBSCRIBE, "STOP", 4);
+    } else if (this->socketType == ZMQ_PULL) {
+        /* create the push socket to disconnect from server */
+        this->stopSocket = zmq_socket(this->context, ZMQ_PUSH);
+        char *p = this->stopHost;
+        char *q = this->serverHost;
+
+        while (*q) {
+            if (*q == '*') {
+                strncpy(p, "127.0.0.1", 9);
+                p += 9;
+                q ++;
+            } else
+                *p++ = *q++;
+        }
+        *p = '\0';
+
+        zmq_connect(this->stopSocket, this->stopHost);
     }
-    /* connect to the stop pub server */
-    zmq_connect(this->socket, stopHost);
-    zmq_setsockopt(this->socket, ZMQ_SUBSCRIBE, "STOP", 4);
 
     /* Create the epicsEvents for signaling to the acquisition task when acquisition starts */
     this->startEventId = epicsEventCreate(epicsEventEmpty);
@@ -551,7 +618,7 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
 /* Code for iocsh registration */
 static const iocshArg ZMQDriverConfigArg0 = {"Port name", iocshArgString};
-static const iocshArg ZMQDriverConfigArg1 = {"Host ip:port", iocshArgString};
+static const iocshArg ZMQDriverConfigArg1 = {"transport://address [type]", iocshArgString};
 static const iocshArg ZMQDriverConfigArg2 = {"maxBuffers", iocshArgInt};
 static const iocshArg ZMQDriverConfigArg3 = {"maxMemory", iocshArgInt};
 static const iocshArg ZMQDriverConfigArg4 = {"priority", iocshArgInt};
@@ -566,7 +633,7 @@ static const iocshFuncDef configZMQDriver = {"ZMQDriverConfig", 6, ZMQDriverConf
 static void configZMQDriverCallFunc(const iocshArgBuf *args)
 {
     ZMQDriverConfig(args[0].sval, args[1].sval, args[2].ival, 
-                    args[3].ival, args[4].ival, args[5].ival, args[6].ival);
+                    args[3].ival, args[4].ival, args[5].ival);
 }
 
 

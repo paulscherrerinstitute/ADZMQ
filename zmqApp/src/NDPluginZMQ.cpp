@@ -200,19 +200,68 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
                      asynGenericPointerMask, asynGenericPointerMask,
                      0, 1, priority, stackSize)
 {
-    //const char *functionName = "NDPluginZMQ";
+    const char *functionName = "NDPluginZMQ";
+    char *cp;
+    char type[10] = "";
+    int rc = 0;
+
+    /* server host in form of "transport://address [PUB|PUSH]"
+     * separate host and type information */
     strcpy(this->serverHost, serverHost);
+    if ((cp=strchr(this->serverHost, ' '))!=NULL) {
+        *cp++ = '\0';
+        strcpy(type, cp);
+    }
+    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0)
+        this->socketType = ZMQ_PUB;
+    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0)
+        this->socketType = ZMQ_PUSH;
+    else if (strlen(type) == 0) {
+        /* If type is not specified, make a guess.
+         * If "*" is found in host address, then it is assumed to be a PUB server type
+         * */
+        if (strchr(this->serverHost, '*')!=NULL) {
+            this->socketType = ZMQ_PUB;
+        } else {
+            this->socketType = ZMQ_PUSH;
+        }
+    } else {
+        fprintf(stderr, "%s: Unsupported socket type %s\n", functionName, type);
+        return;
+    }
 
     /* Set the plugin type string */    
     setStringParam(NDPluginDriverPluginType, driverName);
 
     /* Create ZMQ pub socket */
     this->context = zmq_ctx_new();
-    this->socket = zmq_socket(context, ZMQ_PUB);
-    zmq_bind(this->socket, this->serverHost);
+    this->socket = zmq_socket(context, this->socketType);
+
+    if (this->socketType == ZMQ_PUB) {
+        rc = zmq_bind(this->socket, this->serverHost);
+    } else if (this->socketType == ZMQ_PUSH) {
+        rc = zmq_connect(this->socket, this->serverHost);
+    }
+    if (rc != 0) {
+        fprintf(stderr, "%s: unable to bind/connect, %s\n",
+                functionName,
+                zmq_strerror(zmq_errno()));
+        return;
+    }
 
     /* Try to connect to the NDArray port */
     connectToArrayPort();
+}
+
+NDPluginZMQ::~NDPluginZMQ()
+{
+    if (this->socketType == ZMQ_PUB)
+        zmq_unbind(this->socket, this->serverHost);
+    else if (this->socketType == ZMQ_PUSH)
+        zmq_disconnect(this->socket, this->serverHost);
+
+    zmq_close(this->socket);
+    zmq_ctx_destroy(this->context);
 }
 
 /** Configuration command */
@@ -228,7 +277,7 @@ extern "C" int NDZMQConfigure(const char *portName, const char *serverHost, int 
 
 /* EPICS iocsh shell commands */
 static const iocshArg initArg0 = { "portName",iocshArgString};
-static const iocshArg initArg1 = { "serverHost",iocshArgString};
+static const iocshArg initArg1 = { "transport://address [type]",iocshArgString};
 static const iocshArg initArg2 = { "frame queue size",iocshArgInt};
 static const iocshArg initArg3 = { "blocking callbacks",iocshArgInt};
 static const iocshArg initArg4 = { "NDArrayPort",iocshArgString};

@@ -16,7 +16,7 @@ epicsEnvSet("YSIZE",  "600")
 epicsEnvSet("NCHANS", "2048")
 
 # Connect to ZeroMQ server
-# ZMQDriverConfigure (
+# ZMQDriverConfig (
 #     portName,   # The name of the asyn port driver to be created.
 #     serverHost, # The ZMQ server to connect to.
 #     maxBuffers, # The maximum number of NDArray buffers that the NDArrayPool for this driver is

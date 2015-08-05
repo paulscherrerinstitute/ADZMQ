@@ -31,6 +31,19 @@
 #include <iostream>
 #include <math.h>
 
+#if defined(_WIN32) && !defined(__GNUC__)
+  #include <float.h>
+  #ifndef wcsncasecmp
+    #define wcsncasecmp _wcsnicmp
+  #endif
+  #ifndef isinf
+    #define isinf(x) (!_finite(x))
+  #endif
+  #ifndef isnan
+    #define isnan(x) _isnan(x)
+  #endif
+#endif
+
 #include "JSONValue.h"
 
 // Macros to free an array/object

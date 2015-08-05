@@ -16,6 +16,14 @@ LIB_INSTALLS_Linux += ../os/linux-x86/libzmq.a
 else ifeq (darwin-x86, $(findstring darwin-x86, $(T_A)))
 LIB_INSTALLS_Darwin += ../os/darwin-x86/libzmq.a
 
+else ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
+LIB_INSTALLS_WIN32 += ../os/win32-x86/libzmq.lib
+BIN_INSTALLS_WIN32 += ../os/win32-x86/libzmq.dll
+
+else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
+LIB_INSTALLS_WIN32 += ../os/windows-x64/libzmq.lib
+BIN_INSTALLS_WIN32 += ../os/windows-x64/libzmq.dll
+
 endif
 
 #=============================

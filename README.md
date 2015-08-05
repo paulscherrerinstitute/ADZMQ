@@ -8,6 +8,12 @@ This project attempts to integrate ZeroMQ with areaDetector framework, in two fo
 
 The ZeroMQ message format is detailed [here](https://docs.google.com/document/d/1npYDPxXL4yXiSZNyNKXW_E8ut0p2XhfSb0AJP5Wjpi0/edit#heading=h.mea8pioczwh2).
 
+
+Documentation
+-------------
+[Configuration](documentation/Usage.md)
+
+
 Build
 -----
 If you build under PSI environment, 

@@ -12,7 +12,13 @@ ADZMQ_SRCS += ZMQDriver.cpp
 ADZMQ_SRCS += NDPluginZMQ.cpp
 ADZMQ_SRCS += JSON.cpp JSONValue.cpp
 
-ADZMQ_LIBS += zmq
+ifeq ($(OS_CLASS),WIN32)
+    LIBZMQ = libzmq
+else
+    LIBZMQ = zmq
+endif
+
+ADZMQ_LIBS += $(LIBZMQ)
 #==================================
 PROD_NAME = zmqApp
 PROD_IOC = $(PROD_NAME)
@@ -23,7 +29,7 @@ zmqApp_DBD += ADZMQSupport.dbd
 
 zmqApp_SRCS += zmqApp_registerRecordDeviceDriver.cpp zmqAppMain.cpp
 
-zmqApp_LIBS += ADZMQ
+zmqApp_LIBS += ADZMQ $(LIBZMQ)
 
 include $(AREA_DETECTOR)/ADApp/commonDriverMakefile
 #
