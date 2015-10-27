@@ -32,11 +32,14 @@ print('Client %s %s'%(args.host,args.stype))
 
 while True:
     # receive header
-    header = sock.recv()
+    try:
+        header = sock.recv()
+    except:
+        break
     print(header)
     info = json.loads(header)
 
     # receive data
     data = numpy.frombuffer(sock.recv(), dtype=str(info['type']))
     data.reshape(info['shape'])
-    print(data)
+    print(data.sum(),data)
