@@ -26,13 +26,13 @@ epicsEnvSet("NCHANS", "2048")
 #     priority,   # The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
 #     stackSize,  # The stack size for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
 ZMQDriverConfig("ZMQ1", "tcp://127.0.0.1:5432", -1, -1)
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/ADBase.template",     "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
+dbLoadRecords("$(ADCORE)/ADApp/Db/ADBase.template",     "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 # Create a standard arrays plugin, set it to get data from ZMQ driver.
 NDStdArraysConfigure("Image1", 3, 0, "$(PORT)", 0)
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
+dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
 
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int8,FTVL=UCHAR,NELEMENTS=480000")
+dbLoadRecords("$(ADCORE)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int8,FTVL=UCHAR,NELEMENTS=480000")
 
 # Create a ZeroMQ server to publish NDArray
 # NDZMQConfigure (
@@ -47,11 +47,11 @@ dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=i
 #     maxBuffers,        # Maximum number of NDArray buffers driver can allocate. -1=unlimited
 #     maxMemory)         # Maximum memory bytes driver can allocate. -1=unlimited
 NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "ZMQ1", 0)
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PORT=NDZMQ1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
+dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PORT=NDZMQ1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
 
 
 # Load all other plugins using commonPlugins.cmd
-< $(AREA_DETECTOR)/iocBoot/commonPlugins.cmd
+< $(ADCORE)/iocBoot/commonPlugins.cmd
 
 
 cd ${TOP}/iocBoot/${IOC}

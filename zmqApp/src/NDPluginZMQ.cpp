@@ -42,31 +42,31 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
 
         switch (attrDataType) {
             case NDAttrInt8:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsInt8*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsInt8*)value);
                 break;
             case NDAttrUInt8:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsUInt8*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt8*)value);
                 break;
             case NDAttrInt16:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsInt16*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsInt16*)value);
                 break;
             case NDAttrUInt16:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsUInt16*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt16*)value);
                 break;
             case NDAttrInt32:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsInt32*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsInt32*)value);
                 break;
             case NDAttrUInt32:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsUInt32*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt32*)value);
                 break;
             case NDAttrFloat32:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsFloat32*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsFloat32*)value);
                 break;
             case NDAttrFloat64:
-                sjson << "\"" << pAttr->pName << "\":" << *((epicsFloat64*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsFloat64*)value);
                 break;
             case NDAttrString:
-                sjson << "\"" << pAttr->pName << "\":" << "\"" << (char*)value << "\"";
+                sjson << "\"" << pAttr->getName() << "\":" << "\"" << (char*)value << "\"";
                 break;
             default:
                 break;
