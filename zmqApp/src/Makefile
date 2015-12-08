@@ -31,7 +31,7 @@ zmqApp_SRCS += zmqApp_registerRecordDeviceDriver.cpp zmqAppMain.cpp
 
 zmqApp_LIBS += ADZMQ $(LIBZMQ)
 
-include $(AREA_DETECTOR)/ADApp/commonDriverMakefile
+include $(ADCORE)/ADApp/commonDriverMakefile
 #
 #
 include $(TOP)/configure/RULES

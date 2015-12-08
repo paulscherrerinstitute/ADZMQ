@@ -22,7 +22,23 @@ If you build under PSI environment,
     make
 ```
 
-Otherwise, use the standard EPICS base system. Edit *configure/RELEASE* and then run
+Otherwise, use the standard EPICS base system. Create a file *configure/RELEASE.local* with your build environment settings,
+```
+SUPPORT=C:/epics/synApps_5_7/support/
+EPICS_BASE=C:/epics/base-3.14.12-VC12
+
+# asyn
+ASYN=$(SUPPORT)/asyn-4-22
+BUSY=$(SUPPORT)/busy-1-6
+CALC=$(SUPPORT)/calc-3-2
+SSCAN=$(SUPPORT)/sscan-2-9
+AUTOSAVE=$(SUPPORT)/autosave-5-1
+# AREA_DETECTOR is needed for base and plugins
+AREA_DETECTOR=C:/epics/areaDetector
+ADBINARIES=$(AREA_DETECTOR)/ADBinaries
+ADCORE=$(AREA_DETECTOR)/ADCore
+```
+And then run
 ```bash
     make
 ```

@@ -371,7 +371,7 @@ void ZMQDriver :: ZMQTask() {
 }
 
 /* Disconnects the ZMQ connection */
-void shutdown (void* arg) {
+static void shutdown (void* arg) {
 
     ZMQDriver *p = (ZMQDriver*)arg;
     if (p) delete p;
