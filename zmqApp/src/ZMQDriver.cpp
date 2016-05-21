@@ -71,7 +71,7 @@ struct ChunkInfo {
 };
 
 /* parse data header */ 
-ChunkInfo parseHeader(const char *msg) {
+ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
 
     ChunkInfo info;
     info.valid = false; /* indicate an invalid value */
@@ -147,6 +147,28 @@ ChunkInfo parseHeader(const char *msg) {
         info.valid = false;
         fprintf(stderr, "Unsupported data type\n");
     }
+    /* parse ndattr */
+    if (root.find(L"ndattr") == root.end() ||
+            !root[L"ndattr"]->IsObject()) {
+        break;
+    }
+    JSONObject ndattr = root[L"ndattr"]->AsObject();
+    for (JSONObject::iterator attr = ndattr.begin(); attr != ndattr.end(); ++attr) {
+        std::wstring namew = attr->first;
+        std::string name( namew.begin(), namew.end() );
+
+        JSONValue *val =  attr->second;
+        if (val->IsNumber()) {
+            double v = val->AsNumber();
+            attributeList.add(name.c_str(), name.c_str(), NDAttrFloat64, &v);
+        } else if (val->IsString()) {
+            std::wstring vw = val->AsString();
+            std::string v(vw.begin(), vw.end());
+            attributeList.add(name.c_str(), name.c_str(), NDAttrString, (void *)v.c_str());
+        } else {
+            fprintf(stderr, "Invalid \"ndattr\" type\n");
+        }
+    }
     } while (0);
 
     delete value;
@@ -164,6 +186,7 @@ asynStatus ZMQDriver :: readData() {
     NDColorMode_t colorMode;
     NDArrayInfo_t arrayInfo;
     NDArray *pImage = this->pArrays[0];
+    NDAttributeList attributeList;
     const char * functionName = "readData";
 
     /* receive header */
@@ -186,7 +209,7 @@ asynStatus ZMQDriver :: readData() {
     /* parse the header */
     strncpy(header, (const char *)zmq_msg_data(&message), msg_len);
     header[msg_len] = '\0';
-    info = parseHeader(header);
+    info = parseHeader(header, attributeList);
 
     /* we are done with the header message */
     zmq_msg_close(&message);
@@ -251,6 +274,8 @@ asynStatus ZMQDriver :: readData() {
     /* image unique id comes from the server */
     pImage->uniqueId = info.frame;
     pImage->pAttributeList->add("ColorMode", "Color mode", NDAttrInt32, &colorMode);
+    attributeList.copy(pImage->pAttributeList);
+
     setIntegerParam(ADSizeX, ncols);
     setIntegerParam(NDArraySizeX, ncols);
     setIntegerParam(ADSizeY, nrows);
