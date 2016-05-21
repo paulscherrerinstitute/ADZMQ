@@ -36,7 +36,10 @@ header_t = """{
     "htype" : ["chunk-1.0"],
     "shape" : [%d,%d],
     "type"  : "%s",
-    "frame" : %d
+    "frame" : %d,
+    "ndattr": {
+        "NumImages" : 1
+    }
 }"""
 
 frame = 0
