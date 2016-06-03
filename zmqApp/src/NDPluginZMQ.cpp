@@ -270,9 +270,13 @@ extern "C" int NDZMQConfigure(const char *portName, const char *serverHost, int 
                                  int maxBuffers, size_t maxMemory,
                                  int priority, int stackSize)
 {
-    new NDPluginZMQ(portName, serverHost, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr,
+    NDPluginZMQ *pPlugin = new NDPluginZMQ(portName, serverHost, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr,
                       maxBuffers, maxMemory, priority, stackSize);
-    return(asynSuccess);
+#if ADCORE_VERISON > 2 || (ADCORE_VERSION == 2 && ADCORE_REVISION >= 5)
+    return pPlugin->start();
+#else
+    return asynSuccess;
+#endif
 }
 
 /* EPICS iocsh shell commands */
