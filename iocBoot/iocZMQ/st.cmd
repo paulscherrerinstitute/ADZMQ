@@ -14,6 +14,7 @@ epicsEnvSet("QSIZE",  "20")
 epicsEnvSet("XSIZE",  "800")
 epicsEnvSet("YSIZE",  "600")
 epicsEnvSet("NCHANS", "2048")
+epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 # Connect to ZeroMQ server
 # ZMQDriverConfig (
@@ -30,9 +31,7 @@ dbLoadRecords("$(ADCORE)/ADApp/Db/ADBase.template",     "P=$(PREFIX),R=cam1:,POR
 
 # Create a standard arrays plugin, set it to get data from ZMQ driver.
 NDStdArraysConfigure("Image1", 3, 0, "$(PORT)", 0)
-dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
-
-dbLoadRecords("$(ADCORE)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int8,FTVL=UCHAR,NELEMENTS=480000")
+dbLoadRecords("$(ADCORE)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int8,FTVL=UCHAR,NELEMENTS=480000,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
 
 # Create a ZeroMQ server to publish NDArray
 # NDZMQConfigure (
@@ -46,12 +45,12 @@ dbLoadRecords("$(ADCORE)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image1:,
 #     NDArrayAddr,       # Address of NDArray source
 #     maxBuffers,        # Maximum number of NDArray buffers driver can allocate. -1=unlimited
 #     maxMemory)         # Maximum memory bytes driver can allocate. -1=unlimited
-NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "ZMQ1", 0)
+NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "ZMQ1", 0, -1, -1)
 dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PORT=NDZMQ1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
 
 
 # Load all other plugins using commonPlugins.cmd
-< $(ADCORE)/iocBoot/commonPlugins.cmd
+#< $(ADCORE)/iocBoot/commonPlugins.cmd
 
 
 cd ${TOP}/iocBoot/${IOC}
