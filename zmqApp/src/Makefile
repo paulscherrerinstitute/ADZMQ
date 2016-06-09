@@ -20,18 +20,7 @@ endif
 
 ADZMQ_LIBS += $(LIBZMQ)
 #==================================
-PROD_NAME = zmqApp
-PROD_IOC = $(PROD_NAME)
-
-# <name>.dbd will be created from <name>Include.dbd
-DBD += $(PROD_NAME).dbd
-zmqApp_DBD += ADZMQSupport.dbd
-
-zmqApp_SRCS += zmqApp_registerRecordDeviceDriver.cpp zmqAppMain.cpp
-
-zmqApp_LIBS += ADZMQ $(LIBZMQ)
-
-include $(ADCORE)/ADApp/commonDriverMakefile
+include $(ADCORE)/ADApp/commonLibraryMakefile
 #
 #
 include $(TOP)/configure/RULES
