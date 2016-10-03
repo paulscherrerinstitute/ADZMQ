@@ -1,27 +1,26 @@
-cd ../psiBuild
+# Prefix for all records
+epicsEnvSet("PREFIX", "13ZMQ1:")
+# The port name for the detector
+epicsEnvSet("PORT", "ZMQ1")
+# The queue size for all plugins
+epicsEnvSet("QSIZE", "20")
+# The maximim image width; used to set the maximum size for this driver
+# and for row profiles in the NDPluginStats plugin
+epicsEnvSet("XSIZE",  "1024")
+# The maximim image height; used to set the maximum size for this driver
+# and for column profiles in the NDPluginStats plugin
+epicsEnvSet("YSIZE",  "1024")
+# The maximum number of time series points in the NDPluginStats plugin
+epicsEnvSet("NCHANS", "2048")
+# The maximum number of frames buffered in the NDPluginCircularBuff plugin
+epicsEnvSet("CBUFFS", "500")
+
 require "ADZMQ"
-require "ADPlugin"
 
-cd ../tests
-ZMQDriverConfig("ZMQ1", "tcp://127.0.0.1:5432", -1, -1)
+ZMQDriverConfig("$(PORT)", "tcp://127.0.0.1:5432", -1, -1)
+dbLoadRecords("ADBase.template",     "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
-NDStdArraysConfigure("Image1", 3, 0, "ZMQ1", 0)
+NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "$(PORT)", 0)
+dbLoadRecords("NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PORT=NDZMQ1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
 
-NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "ZMQ1", 0)
-
-NDROIConfigure("ROI1", 20, 0, "ZMQ1", 0, -1, -1)
-NDROIConfigure("ROI2", 20, 0, "ZMQ1", 0, -1, -1)
-NDROIConfigure("ROI3", 20, 0, "ZMQ1", 0, -1, -1)
-NDROIConfigure("ROI4", 20, 0, "ZMQ1", 0, -1, -1)
-
-NDStatsConfigure("STATS1", 20, 0, "ROI1", 0, -1, -1)
-NDStatsConfigure("STATS2", 20, 0, "ROI2", 0, -1, -1)
-NDStatsConfigure("STATS3", 20, 0, "ROI3", 0, -1, -1)
-NDStatsConfigure("STATS4", 20, 0, "ROI4", 0, -1, -1)
-NDStatsConfigure("STATS5", 20, 0, "ZMQ1",  0, -1, -1)
-
-NDFileHDF5Configure("FileHDF1", 20, 0, "ZMQ1", 0)
-
-dbLoadTemplate("zmq.subs")
-dbLoadTemplate("stats.subs")
-
+runScript $(ADCore_DIR)/commonPlugin.cmd,"NELEMENTS=480000"
