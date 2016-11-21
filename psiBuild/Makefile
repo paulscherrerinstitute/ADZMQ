@@ -10,8 +10,3 @@ SRCS += ../zmqApp/src/JSONValue.cpp
 SRCS += ../zmqApp/src/NDPluginZMQ.cpp
 DBDS += ../zmqApp/src/ADZMQSupport.dbd
 
-# convert SL5-x86, SL6-x86 to linux-x86
-ARCH=linux-$(word 2,$(subst -, , $(EPICS_HOST_ARCH)))
-USR_INCLUDES += -I ../../zmqApp/zmqSrc/
-USR_LDFLAGS += -L ../../zmqApp/zmqSrc/os/$(ARCH)
-USR_LIBS += zmq
