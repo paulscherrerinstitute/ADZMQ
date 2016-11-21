@@ -16,6 +16,7 @@
 
 #include <zmq.h>
 #include "NDPluginZMQ.h"
+#include <ADCoreVersion.h>
 
 #include <epicsExport.h>
 
