@@ -101,17 +101,19 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     getIntegerParam(NDArrayCounter, &arrayCounter);
 
     /* Call the base class method */
+#if ADCORE_VERSION >= 3
+    NDPluginDriver::beginProcessCallbacks(pArray);
+#else
     NDPluginDriver::processCallbacks(pArray);
-
     /* We always keep the last array so read() can use it.  
      * Release previous one, reserve new one */
     if (this->pArrays[0]) this->pArrays[0]->release();
     pArray->reserve();
     this->pArrays[0] = pArray;
+#endif
  
-    pArray->getInfo(&arrayInfo);
-
     /* Get NDArray attributes */
+    pArray->getInfo(&arrayInfo);
 
     /* compose JSON header */
     switch (pArray->dataType){
@@ -159,9 +161,13 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     /* send data */
     zmq_send(this->socket, pArray->pData, arrayInfo.totalBytes, 0);
 
-    arrayCounter++;
     /* Update the parameters.  */
+#if ADCORE_VERSION >= 3
+    NDPluginDriver::endProcessCallbacks(pArray);
+#else
+    arrayCounter++;
     setIntegerParam(NDArrayCounter, arrayCounter);
+#endif
     callParamCallbacks();
 }
 
@@ -196,10 +202,19 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
      * We allocate 1 NDArray of unlimited size in the NDArray pool.
      * This driver can block (because writing a file can be slow), and it is not multi-device.  
      * Set autoconnect to 1.  priority and stacksize can be 0, which will use defaults. */
-    : NDPluginDriver(portName, queueSize, blockingCallbacks, 
-                     NDArrayPort, NDArrayAddr, 1, 0, maxBuffers, maxMemory, 
+#if ADCORE_VERISION < 3
+    : NDPluginDriver(portName, queueSize, blockingCallbacks,
+                     NDArrayPort, NDArrayAddr, 1, 0,
+                     maxBuffers, maxMemory,
                      asynGenericPointerMask, asynGenericPointerMask,
                      0, 1, priority, stackSize)
+#else
+    : NDPluginDriver(portName, queueSize, blockingCallbacks,
+                     NDArrayPort, NDArrayAddr, 1,
+                     maxBuffers, maxMemory,
+                     asynGenericPointerMask, asynGenericPointerMask,
+                     0, 1, priority, stackSize, 0)
+#endif
 {
     const char *functionName = "NDPluginZMQ";
     char *cp;
