@@ -115,6 +115,8 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     /* Get NDArray attributes */
     pArray->getInfo(&arrayInfo);
 
+    this->unlock();
+
     /* compose JSON header */
     switch (pArray->dataType){
         case NDInt8:
@@ -160,10 +162,12 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     zmq_send(this->socket, msg.c_str(), msg.length(), ZMQ_SNDMORE);
     /* send data */
     zmq_send(this->socket, pArray->pData, arrayInfo.totalBytes, 0);
+    
+    this->lock();
 
     /* Update the parameters.  */
 #if ADCORE_VERSION >= 3
-    NDPluginDriver::endProcessCallbacks(pArray);
+    NDPluginDriver::endProcessCallbacks(pArray, true, true);
 #else
     arrayCounter++;
     setIntegerParam(NDArrayCounter, arrayCounter);
@@ -288,7 +292,7 @@ extern "C" int NDZMQConfigure(const char *portName, const char *serverHost, int 
 {
     NDPluginZMQ *pPlugin = new NDPluginZMQ(portName, serverHost, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr,
                       maxBuffers, maxMemory, priority, stackSize);
-#if ADCORE_VERISON > 2 || (ADCORE_VERSION == 2 && ADCORE_REVISION >= 5)
+#if (ADCORE_VERSION > 2) || (ADCORE_VERSION == 2 && ADCORE_REVISION >= 5)
     return pPlugin->start();
 #else
     return asynSuccess;
