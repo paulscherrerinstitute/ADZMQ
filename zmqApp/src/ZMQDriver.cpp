@@ -88,7 +88,7 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
     }
     JSONObject root = value->AsObject();
 
-    /* check htype, only "chunk-1.0" supported */
+    /* check htype, only "array-1.0" supported */
     if (root.find(L"htype") == root.end() ||
             !root[L"htype"]->IsArray()) {
      
@@ -96,8 +96,8 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
         break;
     }
     JSONArray htype = root[L"htype"]->AsArray();
-    if (htype[0]->AsString() != L"chunk-1.0") {
-        fprintf(stderr, "\"htype\" != \"chunk-1.0\" \n");
+    if (htype[0]->AsString() != L"array-1.0") {
+        fprintf(stderr, "\"htype\" != \"array-1.0\" \n");
         break;
     }
 

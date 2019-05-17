@@ -33,7 +33,7 @@ cols = 800
 rows = 600
 
 header_t = """{
-    "htype" : ["chunk-1.0"],
+    "htype" : ["array-1.0"],
     "shape" : [%d,%d],
     "type"  : "%s",
     "frame" : %d,

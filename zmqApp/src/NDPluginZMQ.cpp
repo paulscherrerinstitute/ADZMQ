@@ -150,7 +150,7 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     }
     shape << ']';
 
-    header << "{\"htype\":[\"chunk-1.0\"], " 
+    header << "{\"htype\":[\"array-1.0\"], " 
         << "\"type\":" << "\"" << type << "\", "
         << "\"shape\":" << shape.str() << ", "
         << "\"frame\":" << pArray->uniqueId << ", " 
