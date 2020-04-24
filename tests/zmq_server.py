@@ -50,7 +50,7 @@ while True:
     data[:50,:50] = 255
     # send header
     header = header_t % (cols, rows, data.dtype, frame)
-    sock.send(header, zmq.SNDMORE)
+    sock.send_string(header, zmq.SNDMORE)
     # send data
     sock.send(data)
 

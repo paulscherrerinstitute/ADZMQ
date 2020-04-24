@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import sys
 import time
 import zmq
 import numpy
@@ -23,7 +24,7 @@ else:
 context = zmq.Context()
 sock = context.socket(stype)
 if stype == zmq.SUB:
-    sock.setsockopt(zmq.SUBSCRIBE, '')
+    sock.setsockopt(zmq.SUBSCRIBE, b'')
     sock.connect(args.host)
 elif stype == zmq.PULL:
     sock.bind(args.host)
@@ -34,6 +35,8 @@ while True:
     # receive header
     try:
         header = sock.recv()
+        if sys.hexversion >= 0x03000000:
+            header = header.decode()
     except:
         break
     print(header)
