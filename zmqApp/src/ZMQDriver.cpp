@@ -17,13 +17,14 @@
 #include <epicsMutex.h>
 #include <cantProceed.h>
 #include <iocsh.h>
-#include <epicsExport.h>
 #include <epicsExit.h>
 
 #include <zmq.h>
 #include <JSON.h>
 
 #include "ADDriver.h"
+
+#include <epicsExport.h>
 
 static const char *driverName = "ZMQDriver";
 
