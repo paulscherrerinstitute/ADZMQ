@@ -44,11 +44,11 @@ public:
     /* These are the methods that we override from ADDriver */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     void report(FILE *fp, int details);
-    
-    /* These are called from C and so must be public */
-    void ZMQTask(); 
 
-private:                                        
+    /* These are called from C and so must be public */
+    void ZMQTask();
+
+private:
     /* These are the methods that are new to this class */
     asynStatus readData();
 
@@ -71,7 +71,7 @@ struct ChunkInfo {
     bool valid;
 };
 
-/* parse data header */ 
+/* parse data header */
 ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
 
     ChunkInfo info;
@@ -79,9 +79,9 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
 
     JSONValue *value = JSON::Parse(msg);
     if (value == NULL)
-        return info; 
-  
-    /* do-while(0) to simplify flow control */ 
+        return info;
+
+    /* do-while(0) to simplify flow control */
     do {
     if (!value->IsObject()) {
         fprintf(stderr, "Invalid JSON Object\n");
@@ -92,7 +92,7 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
     /* check htype, only "array-1.0" supported */
     if (root.find(L"htype") == root.end() ||
             !root[L"htype"]->IsArray()) {
-     
+
         fprintf(stderr, "Invalid \"htype\" field\n");
         break;
     }
@@ -103,9 +103,9 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
     }
 
     /* get shape info */
-    if (root.find(L"shape") == root.end() || 
+    if (root.find(L"shape") == root.end() ||
             !root[L"shape"]->IsArray()) {
-        fprintf(stderr, "Invalid \"shape\" field\n"); 
+        fprintf(stderr, "Invalid \"shape\" field\n");
         break;
     }
     JSONArray shape = root[L"shape"]->AsArray();
@@ -195,13 +195,13 @@ asynStatus ZMQDriver :: readData() {
     msg_len = zmq_msg_recv(&message, this->socket, 0);
     if (msg_len == -1) {
         zmq_msg_close(&message);
-        fprintf(stderr, "%s:%s: %s \n", 
+        fprintf(stderr, "%s:%s: %s \n",
             driverName, functionName, zmq_strerror(zmq_errno()));
         return asynError;
     }
 
     /* is this the message to stop? */
-    if (msg_len == 4 && 
+    if (msg_len == 4 &&
             strncmp((const char*)zmq_msg_data(&message), "STOP", 4) == 0) {
         zmq_msg_close(&message);
         return asynError;
@@ -220,20 +220,20 @@ asynStatus ZMQDriver :: readData() {
     msg_len = zmq_msg_recv(&message, this->socket, 0);
     if (msg_len == -1) {
         zmq_msg_close(&message);
-        fprintf(stderr, "%s:%s: %s \n", 
+        fprintf(stderr, "%s:%s: %s \n",
             driverName, functionName, zmq_strerror(zmq_errno()));
         return asynError;
     }
 
     /* is this the message to stop? */
-    if (msg_len == 4 && 
+    if (msg_len == 4 &&
             strncmp((const char*)zmq_msg_data(&message), "STOP", 4) == 0) {
         printf("got STOP\n");
         zmq_msg_close(&message);
         return asynError;
     }
-    
-    /* if header is not parsed correctly then discard data 
+
+    /* if header is not parsed correctly then discard data
      * NOTE: this check isn't done immeditely after parseHeader.
      * If we abort from receiving multipart messages, the next run will crash.
      * As of ZMQ 4.0.4.
@@ -247,7 +247,7 @@ asynStatus ZMQDriver :: readData() {
     nrows = info.dims[1] == 0 ? 1 : info.dims[1];
     if (info.ndims == 3)
         colorMode = NDColorModeRGB1;
-    else 
+    else
         colorMode = NDColorModeMono;
 
     this->lock();
@@ -268,7 +268,7 @@ asynStatus ZMQDriver :: readData() {
             driverName, functionName, msg_len, arrayInfo.totalBytes);
         return asynError;
     }
- 
+
     memcpy(pImage->pData, zmq_msg_data(&message), msg_len);
     zmq_msg_close(&message);
 
@@ -466,11 +466,11 @@ asynStatus ZMQDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
     }
 
     if (status)
-        asynPrint(pasynUser, ASYN_TRACE_ERROR, 
-              "%s:%s: error, status=%d function=%d, value=%d\n", 
+        asynPrint(pasynUser, ASYN_TRACE_ERROR,
+              "%s:%s: error, status=%d function=%d, value=%d\n",
               driverName, functionName, status, function, value);
     else
-        asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
+        asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
               "%s:%s: function=%d, value=%d\n",
               driverName, functionName, function, value);
     return((asynStatus)status);
@@ -498,7 +498,7 @@ void ZMQDriver::report(FILE *fp, int details)
         fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
         fprintf(fp, "  Data type:         %d\n", dataType);
     }
- 
+
     /* Call the base class method */
     ADDriver::report(fp, details);
 }
@@ -511,24 +511,24 @@ extern "C" int ZMQDriverConfig(char *portName, /* Port name */
 {
     new ZMQDriver(portName, serverHost, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
-}   
+}
 
 
 /** Constructor for ZMQ driver; most parameters are simply passed to ADDriver::ADDriver.
-  * After calling the base class constructor this method creates a thread to collect the detector data, 
+  * After calling the base class constructor this method creates a thread to collect the detector data,
   * and sets reasonable default values for the parameters defined in this class, asynNDArrayDriver and ADDriver.
   * \param[in] portName The name of the asyn port driver to be created.
   * \param[in] serverHost The address of the ZMQ server, and pattern to be used. transport://address [SUB|PULL].
-  * \param[in] maxBuffers The maximum number of NDArray buffers that the NDArrayPool for this driver is 
+  * \param[in] maxBuffers The maximum number of NDArray buffers that the NDArrayPool for this driver is
   *            allowed to allocate. Set this to -1 to allow an unlimited number of buffers.
-  * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is 
+  * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is
   *            allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
   * \param[in] priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
   * \param[in] stackSize The stack size for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
   */
 ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffers, size_t maxMemory,
                      int priority, int stackSize)
-    : ADDriver(portName, 1, 0, maxBuffers, maxMemory, 
+    : ADDriver(portName, 1, 0, maxBuffers, maxMemory,
                0, 0,               /* No interfaces beyond those set in ADDriver.cpp */
                ASYN_CANBLOCK, 1,   /* ASYN_CANBLOCK=1, ASYN_MULTIDEVICE=0, autoConnect=1 */
                priority, stackSize), context(0), socket(0)
@@ -658,7 +658,7 @@ static const iocshArg * const ZMQDriverConfigArgs[] = {&ZMQDriverConfigArg0,
 static const iocshFuncDef configZMQDriver = {"ZMQDriverConfig", 6, ZMQDriverConfigArgs};
 static void configZMQDriverCallFunc(const iocshArgBuf *args)
 {
-    ZMQDriverConfig(args[0].sval, args[1].sval, args[2].ival, 
+    ZMQDriverConfig(args[0].sval, args[1].sval, args[2].ival,
                     args[3].ival, args[4].ival, args[5].ival);
 }
 

@@ -10,7 +10,7 @@
 /** Base class for NDArray ZMQ streaming plugins. */
 class NDPluginZMQ : public NDPluginDriver {
 public:
-    NDPluginZMQ(const char *portName, const char *serverHost, int queueSize, int blockingCallbacks, 
+    NDPluginZMQ(const char *portName, const char *serverHost, int queueSize, int blockingCallbacks,
                  const char *NDArrayPort, int NDArrayAddr,
                  int maxBuffers, size_t maxMemory,
                  int priority, int stackSize);
@@ -31,5 +31,5 @@ private:
 };
 
 #define NUM_NDPLUGIN_ZMQ_PARAMS 0
-    
+
 #endif

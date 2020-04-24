@@ -1,6 +1,6 @@
 /*
  * NDPluginZMQ.cpp
- * 
+ *
  * Asyn driver for callbacks to stream area detector data using ZMQ.
  *
  * Author: Xiaoqiang Wang
@@ -26,7 +26,7 @@ static const char *driverName="NDPluginZMQ";
 /** Helper function to convert NDAttributeList to JSON object
  * \param[in] pAttributeList The NDAttributeList.
  */
-std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList) 
+std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
 {
     std::stringstream sjson;
     sjson << '{';
@@ -74,7 +74,7 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
         }
         free(value);
         pAttr = pAttributeList->next(pAttr);
-        if (pAttr != NULL) 
+        if (pAttr != NULL)
             sjson << ',';
     }
     sjson << '}';
@@ -84,7 +84,7 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
 
 /** Callback function that is called by the NDArray driver with new NDArray data.
   * \param[in] pArray  The NDArray from the callback.
-  */ 
+  */
 void NDPluginZMQ::processCallbacks(NDArray *pArray)
 {
     int arrayCounter;
@@ -105,13 +105,13 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     NDPluginDriver::beginProcessCallbacks(pArray);
 #else
     NDPluginDriver::processCallbacks(pArray);
-    /* We always keep the last array so read() can use it.  
+    /* We always keep the last array so read() can use it.
      * Release previous one, reserve new one */
     if (this->pArrays[0]) this->pArrays[0]->release();
     pArray->reserve();
     this->pArrays[0] = pArray;
 #endif
- 
+
     /* Get NDArray attributes */
     pArray->getInfo(&arrayInfo);
 
@@ -138,31 +138,31 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
             type = "uint32";
             break;
         default:
-            fprintf(stderr, "%s:%s: Data type not supported\n", driverName, functionName); 
+            fprintf(stderr, "%s:%s: Data type not supported\n", driverName, functionName);
             return;
     }
 
     shape << '[';
     for (int i=0; i<pArray->ndims; i++) {
         shape << pArray->dims[i].size;
-        if (i != pArray->ndims - 1) 
+        if (i != pArray->ndims - 1)
             shape << ',';
     }
     shape << ']';
 
-    header << "{\"htype\":[\"array-1.0\"], " 
+    header << "{\"htype\":[\"array-1.0\"], "
         << "\"type\":" << "\"" << type << "\", "
         << "\"shape\":" << shape.str() << ", "
-        << "\"frame\":" << pArray->uniqueId << ", " 
+        << "\"frame\":" << pArray->uniqueId << ", "
         << "\"ndattr\":" << getAttributesAsJSON(pArray->pAttributeList)
         << "}";
-            
+
     /* send header*/
     std::string msg = header.str();
     zmq_send(this->socket, msg.c_str(), msg.length(), ZMQ_SNDMORE);
     /* send data */
     zmq_send(this->socket, pArray->pData, arrayInfo.totalBytes, 0);
-    
+
     this->lock();
 
     /* Update the parameters.  */
@@ -177,7 +177,7 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
 
 /** Constructor for NDPluginZMQ; all parameters are simply passed to NDPluginDriver::NDPluginDriver.
   * \param[in] portName The name of the asyn port driver to be created.
-  * \param[in] queueSize The number of NDArrays that the input queue for this plugin can hold when 
+  * \param[in] queueSize The number of NDArrays that the input queue for this plugin can hold when
   *            NDPluginDriverBlockingCallbacks=0.  Larger queues can decrease the number of dropped arrays,
   *            at the expense of more NDArray buffers being allocated from the underlying driver's NDArrayPool.
   * \param[in] blockingCallbacks Initial setting for the NDPluginDriverBlockingCallbacks flag.
@@ -187,9 +187,9 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
   * \param[in] NDArrayAddr asyn port driver address for initial source of NDArray callbacks.
   * \param[in] maxAddr The maximum  number of asyn addr addresses this driver supports. 1 is minimum.
   * \param[in] numParams The number of parameters supported by the derived class calling this constructor.
-  * \param[in] maxBuffers The maximum number of NDArray buffers that the NDArrayPool for this driver is 
+  * \param[in] maxBuffers The maximum number of NDArray buffers that the NDArrayPool for this driver is
   *            allowed to allocate. Set this to -1 to allow an unlimited number of buffers.
-  * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is 
+  * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is
   *            allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
   * \param[in] interfaceMask Bit mask defining the asyn interfaces that this driver supports.
   * \param[in] interruptMask Bit mask definining the asyn interfaces that can generate interrupts (callbacks)
@@ -198,13 +198,13 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
   * \param[in] priority The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
   * \param[in] stackSize The stack size for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
   */
-NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queueSize, int blockingCallbacks, 
+NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queueSize, int blockingCallbacks,
                            const char *NDArrayPort, int NDArrayAddr,
                            int maxBuffers, size_t maxMemory,
                            int priority, int stackSize)
     /* Invoke the base class constructor.
      * We allocate 1 NDArray of unlimited size in the NDArray pool.
-     * This driver can block (because writing a file can be slow), and it is not multi-device.  
+     * This driver can block (because writing a file can be slow), and it is not multi-device.
      * Set autoconnect to 1.  priority and stacksize can be 0, which will use defaults. */
 #if ADCORE_VERSION < 3
     : NDPluginDriver(portName, queueSize, blockingCallbacks,
@@ -250,7 +250,7 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
         return;
     }
 
-    /* Set the plugin type string */    
+    /* Set the plugin type string */
     setStringParam(NDPluginDriverPluginType, driverName);
 
     /* Create ZMQ pub socket */
