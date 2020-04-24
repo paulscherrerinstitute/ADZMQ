@@ -154,6 +154,9 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
         << "\"type\":" << "\"" << type << "\", "
         << "\"shape\":" << shape.str() << ", "
         << "\"frame\":" << pArray->uniqueId << ", "
+#if ADCORE_VERSION >= 3
+        << "\"encoding\":" << "\"" << pArray->codec.name << "\", "
+#endif
         << "\"ndattr\":" << getAttributesAsJSON(pArray->pAttributeList)
         << "}";
 
@@ -206,19 +209,18 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
      * We allocate 1 NDArray of unlimited size in the NDArray pool.
      * This driver can block (because writing a file can be slow), and it is not multi-device.
      * Set autoconnect to 1.  priority and stacksize can be 0, which will use defaults. */
-#if ADCORE_VERSION < 3
-    : NDPluginDriver(portName, queueSize, blockingCallbacks,
-                     NDArrayPort, NDArrayAddr, 1, 0,
-                     maxBuffers, maxMemory,
-                     asynGenericPointerMask, asynGenericPointerMask,
-                     0, 1, priority, stackSize)
-#else
     : NDPluginDriver(portName, queueSize, blockingCallbacks,
                      NDArrayPort, NDArrayAddr, 1,
+#if ADCORE_VERSION < 3
+                     0,
+#endif
                      maxBuffers, maxMemory,
                      asynGenericPointerMask, asynGenericPointerMask,
-                     0, 1, priority, stackSize, 0)
+                     0, 1, priority, stackSize
+#if ADCORE_VERSION >= 3
+                    ,1 /* single thread */, true /* compressionAware */
 #endif
+                     )
 {
     const char *functionName = "NDPluginZMQ";
     char *cp;
