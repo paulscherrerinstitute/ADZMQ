@@ -18,7 +18,7 @@ else
     LIBZMQ = zmq
 endif
 
-ADZMQ_LIBS += $(LIBZMQ)
+ADZMQ_LIBS += $(LIBZMQ) NDPlugin
 #==================================
 include $(ADCORE)/ADApp/commonLibraryMakefile
 #
