@@ -1,8 +1,8 @@
 include /ioc/tools/driver.makefile
 PROJECT = ADZMQ
-BUILDCLASSES = Linux
+BUILDCLASSES = Linux WIN32
 EXCLUDE_VERSIONS = 3.14.8
-ARCH_FILTER = %-x86_64
+ARCH_FILTER = %-x86_64 win%
 
 # SL6-x86 -> linux-x86
 # SL6-x86_64 -> linux-x86_64
