@@ -13,7 +13,12 @@ $(PROD_NAME)_DBD += ADZMQSupport.dbd
 $(PROD_NAME)_SRCS += zmqApp_registerRecordDeviceDriver.cpp zmqAppMain.cpp
 
 # Add locally compiled object code
-$(PROD_NAME)_LIBS += ADZMQ zmq
+ifeq ($(OS_CLASS),WIN32)
+    LIBZMQ = libzmq
+else
+    LIBZMQ = zmq
+endif
+$(PROD_NAME)_LIBS += ADZMQ $(LIBZMQ)
 
 include $(ADCORE)/ADApp/commonDriverMakefile
 
