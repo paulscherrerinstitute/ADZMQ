@@ -8,12 +8,23 @@ cd ${TOP}
 dbLoadDatabase "dbd/zmqApp.dbd"
 zmqApp_registerRecordDeviceDriver pdbbase
 
+# Prefix for all records
 epicsEnvSet("PREFIX", "13ZMQ1:")
+# The port name for the detector
 epicsEnvSet("PORT",   "ZMQ1")
+# The queue size for all plugins
 epicsEnvSet("QSIZE",  "20")
-epicsEnvSet("XSIZE",  "800")
-epicsEnvSet("YSIZE",  "600")
+# The maximum image width; used to set the maximum size for this driver and for row profiles in the NDPluginStats plugin
+epicsEnvSet("XSIZE",  "1024")
+# The maximum image height; used to set the maximum size for this driver and for column profiles in the NDPluginStats plugin
+epicsEnvSet("YSIZE",  "1024")
+# The maximum number of time series points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
+# The maximum number of frames buffered in the NDPluginCircularBuff plugin
+epicsEnvSet("CBUFFS", "500")
+# The maximum number of threads for plugins which can run in multiple threads
+epicsEnvSet("MAX_THREADS", "8")
+# The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 # Connect to ZeroMQ server
@@ -50,7 +61,7 @@ dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PO
 
 
 # Load all other plugins using commonPlugins.cmd
-#< $(ADCORE)/iocBoot/commonPlugins.cmd
+< $(ADCORE)/iocBoot/commonPlugins.cmd
 
 
 cd ${TOP}/iocBoot/${IOC}
