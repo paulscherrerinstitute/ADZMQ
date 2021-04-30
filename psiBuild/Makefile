@@ -19,6 +19,7 @@ DBDS += ../zmqApp/src/ADZMQSupport.dbd
 IGNORE_MODULES += ZMQ
 OLD_INCLUDE =
 USR_INCLUDES += -I../../zmqApp/zmqSrc/
+USR_LDFLAGS_Darwin  += ../../zmqApp/zmqSrc/os/$(T_A)/libzmq.a
 USR_LDFLAGS_Linux  += ../../zmqApp/zmqSrc/os/$(ARCH)/libzmq.a
 USR_LDFLAGS_win32-x86  += ../../zmqApp/zmqSrc/os/win32-x86/libzmq.lib
 USR_LDFLAGS_windows-x64  += ../../zmqApp/zmqSrc/os/windows-x64/libzmq.lib
