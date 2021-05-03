@@ -97,9 +97,6 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
     NDArrayInfo_t arrayInfo;
     const char* functionName = "sendNDArray";
 
-    if (throttled(pArray))
-        return false;
-
     pArray->getInfo(&arrayInfo);
 
     /* Compose JSON header */
@@ -177,6 +174,8 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
 void NDPluginZMQ::processCallbacks(NDArray *pArray)
 {
     int arrayCounter;
+    bool wasDropped = false;
+    bool wasThrottled = false;
 
     const char* functionName = "processCallbacks";
 
@@ -198,17 +197,38 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
 #endif
 
     this->unlock();
-    bool success = this->sendNDArray(pArray);
-    this->lock();
-    if (!success) {
-        int droppedOutputArrays;
-        getIntegerParam(NDPluginDriverDroppedOutputArrays, &droppedOutputArrays);
-        asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
-                "%s::%s maximum byte rate exceeded, dropped array uniqueId=%d\n",
-                driverName, functionName, pArray->uniqueId);
-        droppedOutputArrays++;
-        setIntegerParam(NDPluginDriverDroppedOutputArrays, droppedOutputArrays);
+
+#if ADCORE_VERSION >= 3
+    if (throttled(pArray))
+        wasThrottled = true;
+    else
+#endif
+    {
+        if (!this->sendNDArray(pArray))
+            wasDropped = true;
     }
+    this->lock();
+
+    if (wasThrottled || wasDropped) {
+#if ADCORE_VERSION >= 3
+        int reason = NDPluginDriverDroppedOutputArrays;
+#else
+        int reason = NDPluginDriverDroppedArrays;
+#endif
+        int droppedOutputArrays;
+        getIntegerParam(reason, &droppedOutputArrays);
+        if (wasThrottled)
+            asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
+                    "%s::%s maximum byte rate exceeded, dropped array uniqueId=%d\n",
+                    driverName, functionName, pArray->uniqueId);
+        if (wasDropped)
+            asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
+                    "%s::%s ZeroMQ socket dropped array uniqueId=%d\n",
+                    driverName, functionName, pArray->uniqueId);
+        droppedOutputArrays++;
+        setIntegerParam(reason, droppedOutputArrays);
+    }
+
     /* Update the parameters.  */
 #if ADCORE_VERSION >= 3
     NDPluginDriver::endProcessCallbacks(pArray, true, true);
