@@ -22,6 +22,7 @@ public:
 
 protected:
     std::string getAttributesAsJSON(NDAttributeList *pAttributeList);
+    bool sendNDArray(NDArray *pArray);
 
 private:
     void *context;

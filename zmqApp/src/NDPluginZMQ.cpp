@@ -23,6 +23,13 @@
 
 static const char *driverName="NDPluginZMQ";
 
+/** Helper function used by zmq_msg to release NDArray
+ */
+void free_NDArray(void *data, void *hint)
+{
+    ((NDArray *)hint)->release();
+}
+
 /** Helper function to convert NDAttributeList to JSON object
  * \param[in] pAttributeList The NDAttributeList.
  */
@@ -82,42 +89,20 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
     return sjson.str();
 }
 
-/** Callback function that is called by the NDArray driver with new NDArray data.
-  * \param[in] pArray  The NDArray from the callback.
-  */
-void NDPluginZMQ::processCallbacks(NDArray *pArray)
+bool NDPluginZMQ::sendNDArray(NDArray *pArray)
 {
-    int arrayCounter;
     std::string type;
     std::ostringstream shape;
     std::ostringstream header;
     NDArrayInfo_t arrayInfo;
+    const char* functionName = "sendNDArray";
 
-    const char* functionName = "processCallbacks";
+    if (throttled(pArray))
+        return false;
 
-    /* Most plugins want to increment the arrayCounter each time they are called, which NDPluginDriver
-     * does.  However, for this plugin we only want to increment it when we actually got a callback we were
-     * supposed to save.  So we save the array counter before calling base method, increment it here */
-    getIntegerParam(NDArrayCounter, &arrayCounter);
-
-    /* Call the base class method */
-#if ADCORE_VERSION >= 3
-    NDPluginDriver::beginProcessCallbacks(pArray);
-#else
-    NDPluginDriver::processCallbacks(pArray);
-    /* We always keep the last array so read() can use it.
-     * Release previous one, reserve new one */
-    if (this->pArrays[0]) this->pArrays[0]->release();
-    pArray->reserve();
-    this->pArrays[0] = pArray;
-#endif
-
-    /* Get NDArray attributes */
     pArray->getInfo(&arrayInfo);
 
-    this->unlock();
-
-    /* compose JSON header */
+    /* Compose JSON header */
     switch (pArray->dataType){
         case NDInt8:
             type = "int8";
@@ -138,8 +123,10 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
             type = "uint32";
             break;
         default:
-            fprintf(stderr, "%s:%s: Data type not supported\n", driverName, functionName);
-            return;
+            asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
+                    "%s::%s Data type not supported %d\n",
+                    driverName, functionName, pArray->dataType);
+            return false;
     }
 
     shape << '[';
@@ -160,14 +147,68 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
         << "\"ndattr\":" << getAttributesAsJSON(pArray->pAttributeList)
         << "}";
 
-    /* send header*/
+    /* Send header*/
     std::string msg = header.str();
-    zmq_send(this->socket, msg.c_str(), msg.length(), ZMQ_SNDMORE);
-    /* send data */
-    zmq_send(this->socket, pArray->pData, arrayInfo.totalBytes, 0);
+    zmq_msg_t msg_header;
+    zmq_msg_init_size(&msg_header, msg.length());
+    memcpy(zmq_msg_data(&msg_header), msg.c_str(), msg.length());
+    int rc = zmq_msg_send(&msg_header, this->socket, ZMQ_SNDMORE|ZMQ_DONTWAIT);
+    if (rc == -1) {
+        zmq_msg_close(&msg_header);
+        return false;
+    } else {
+        /* Send data */
+        pArray->reserve();
+        zmq_msg_t msg_data;
+        zmq_msg_init_data(&msg_data, pArray->pData, arrayInfo.totalBytes, free_NDArray, pArray);
+        int rc = zmq_msg_send(&msg_data, this->socket, ZMQ_DONTWAIT);
+        /* ZeroMQ ensures it sends none or all message parts, so it is unlikely to error only on the 2nd part */
+        if (rc == -1) {
+            zmq_msg_close(&msg_data);
+            return false;
+        }
+    }
+    return true;
+}
 
+/** Callback function that is called by the NDArray driver with new NDArray data.
+  * \param[in] pArray  The NDArray from the callback.
+  */
+void NDPluginZMQ::processCallbacks(NDArray *pArray)
+{
+    int arrayCounter;
+
+    const char* functionName = "processCallbacks";
+
+    /* Most plugins want to increment the arrayCounter each time they are called, which NDPluginDriver
+     * does.  However, for this plugin we only want to increment it when we actually got a callback we were
+     * supposed to save.  So we save the array counter before calling base method, increment it here */
+    getIntegerParam(NDArrayCounter, &arrayCounter);
+
+    /* Call the base class method */
+#if ADCORE_VERSION >= 3
+    NDPluginDriver::beginProcessCallbacks(pArray);
+#else
+    NDPluginDriver::processCallbacks(pArray);
+    /* We always keep the last array so read() can use it.
+     * Release previous one, reserve new one */
+    if (this->pArrays[0]) this->pArrays[0]->release();
+    pArray->reserve();
+    this->pArrays[0] = pArray;
+#endif
+
+    this->unlock();
+    bool success = this->sendNDArray(pArray);
     this->lock();
-
+    if (!success) {
+        int droppedOutputArrays;
+        getIntegerParam(NDPluginDriverDroppedOutputArrays, &droppedOutputArrays);
+        asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
+                "%s::%s maximum byte rate exceeded, dropped array uniqueId=%d\n",
+                driverName, functionName, pArray->uniqueId);
+        droppedOutputArrays++;
+        setIntegerParam(NDPluginDriverDroppedOutputArrays, droppedOutputArrays);
+    }
     /* Update the parameters.  */
 #if ADCORE_VERSION >= 3
     NDPluginDriver::endProcessCallbacks(pArray, true, true);
