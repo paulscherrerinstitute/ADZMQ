@@ -35,7 +35,7 @@ SSCAN=$(SUPPORT)/sscan-2-9
 AUTOSAVE=$(SUPPORT)/autosave-5-1
 # AREA_DETECTOR is needed for base and plugins
 AREA_DETECTOR=C:/epics/areaDetector
-ADBINARIES=$(AREA_DETECTOR)/ADBinaries
+ADSUPPORT=$(AREA_DETECTOR)/ADSupport
 ADCORE=$(AREA_DETECTOR)/ADCore
 ```
 And then run
@@ -46,7 +46,7 @@ And then run
 Test
 ----
 
-After building, the examplar IOC *zmqApp* is created. Follow the test procedure,
+After building, the examplar IOC *zmqIOC* is created. Follow the test procedure,
 
 1. Start the IOC, 
    ```bash
