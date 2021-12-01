@@ -13,6 +13,7 @@
 #include <string>
 #include <iocsh.h>
 #include <sstream>
+#include <iomanip>
 
 #include <zmq.h>
 #include "NDPluginZMQ.h"
@@ -68,10 +69,10 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
                 sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt32*)value);
                 break;
             case NDAttrFloat32:
-                sjson << "\"" << pAttr->getName() << "\":" << *((epicsFloat32*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << std::setprecision(9) << *((epicsFloat32*)value);
                 break;
             case NDAttrFloat64:
-                sjson << "\"" << pAttr->getName() << "\":" << *((epicsFloat64*)value);
+                sjson << "\"" << pAttr->getName() << "\":" << std::setprecision(17) << *((epicsFloat64*)value);
                 break;
             case NDAttrString:
                 sjson << "\"" << pAttr->getName() << "\":" << "\"" << (char*)value << "\"";
