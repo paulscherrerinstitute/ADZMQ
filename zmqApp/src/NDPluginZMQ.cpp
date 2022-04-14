@@ -139,6 +139,7 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
         << "\"type\":" << "\"" << type << "\", "
         << "\"shape\":" << shape.str() << ", "
         << "\"frame\":" << pArray->uniqueId << ", "
+        << "\"timeStamp\":" << std::setprecision(17) << pArray->timeStamp << ", "
 #if ADCORE_VERSION >= 3
         << "\"encoding\":" << "\"" << pArray->codec.name << "\", "
 #endif
