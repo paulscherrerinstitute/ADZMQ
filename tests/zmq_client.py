@@ -8,8 +8,9 @@ import json
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--type', dest='stype', type=str, default='SUB')
-parser.add_argument('--host', dest='host', type=str, default='tcp://127.0.0.1:1234')
+parser.add_argument('--type', dest='stype', default='SUB')
+parser.add_argument('--host', default='tcp://127.0.0.1:1234')
+parser.add_argument('--bind', action='store_true')
 
 args = parser.parse_args()
 if args.stype == 'SUB' or args.stype == 'PUB':
@@ -17,19 +18,20 @@ if args.stype == 'SUB' or args.stype == 'PUB':
 elif args.stype == 'PULL' or args.stype == 'PUSH':
     stype = zmq.PULL
 else:
-    stype = zmq.SUB
     print("Unsupported socket type %s, use SUB"%args.stype)
+    sys.exit(1)
 
 
 context = zmq.Context()
 sock = context.socket(stype)
 if stype == zmq.SUB:
     sock.setsockopt(zmq.SUBSCRIBE, b'')
-    sock.connect(args.host)
-elif stype == zmq.PULL:
+if args.bind:
     sock.bind(args.host)
+else:
+    sock.connect(args.host)
 
-print('Client %s %s'%(args.host,args.stype))
+print('Client %s %s %s'%(('connect to', 'bind at')[args.bind], args.host,args.stype))
 
 while True:
     # receive header
