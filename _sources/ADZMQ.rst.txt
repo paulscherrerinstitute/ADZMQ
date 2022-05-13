@@ -23,10 +23,10 @@ ZMQDriver
 ::
 
   # portName    The name of the asyn port driver to be created.
-  # serverHost  The address of the ZMQ server, and pattern to be used. transport://address [SUB|PULL].
-  # maxBuffers  The maximum number of NDArray buffers that the NDArrayPool for this driver is 
+  # serverHost  The address of the ZMQ server. transport://address [SUB|PULL] [BIND|CONNECT].
+  # maxBuffers  The maximum number of NDArray buffers that the NDArrayPool for this driver is
   #             allowed to allocate. Set this to -1 to allow an unlimited number of buffers.
-  # maxMemory   The maximum amount of memory that the NDArrayPool for this driver is 
+  # maxMemory   The maximum amount of memory that the NDArrayPool for this driver is
   #             allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
   # priority    The thread priority for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
   # stackSize   The stack size for the asyn port driver thread if ASYN_CANBLOCK is set in asynFlags.
@@ -37,12 +37,11 @@ ZMQDriver
 
 ZMQDriver pulls data in. By ZeroMQ patterns, this can be either a puller or a subscriber.
 The *serverHost* parameter of *ZMQDriverConfig* is to specify the server address and pattern.
-It has the form of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
 .. cssclass:: table-bordered table-striped table-hover
 .. flat-table::
   :header-rows: 1
-  :widths: 20 10 70
+  :widths: 70 10 20
 
   * - serverHost
     - Pattern
@@ -63,7 +62,8 @@ It has the form of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
 If the host contains the wildcard, it is assumed to be a puller, otherwise a subscriber.
 If the puller needs to bind on a specific interface, the type must be explicitly specified.
-
+If not specidifed, a subscriber is assumed to connect and a puller is assumed to bind to the address,
+unless the address contains a wildcard, in which case it always binds.
 
 
 NDPluginZMQ
@@ -71,11 +71,11 @@ NDPluginZMQ
 ::
 
   # portName           The name of the asyn port driver to be created.
-  # serverHost         The IP address:port of the ZMQ server to be created.
-  # queueSize,         The number of NDArrays that the input queue for this plugin can hold when 
-  #                    NDPluginDriverBlockingCallbacks=0. 
-  # blockingCallbacks  0=callbacks are queued and executed by the callback thread; 
-  #                     1 callbacks execute in the thread
+  # serverHost         The address of the ZMQ server. transport://address [SUB|PULL] [BIND|CONNECT].
+  # queueSize          The number of NDArrays that the input queue for this plugin can hold when
+  #                    NDPluginDriverBlockingCallbacks=0.
+  # blockingCallbacks  0=callbacks are queued and executed by the callback thread;
+  #                    1=callbacks execute in the thread
   #                    of the driver doing the callbacks.
   # NDArrayPort        Port name of NDArray source
   # NDArrayAddr        Address of NDArray source
@@ -91,12 +91,11 @@ NDPluginZMQ
 
 NDPluginZMQ pushes data out. By ZeroMQ patterns, this can be either a pusher or a publisher.
 The *serverHost* parameter of *NDZMQConfigure* is to specify the server address and pattern.
-It has the for of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
 .. cssclass:: table-bordered table-striped table-hover
 .. flat-table::
   :header-rows: 1
-  :widths: 20 10 70
+  :widths: 70 10 20
 
   * - serverHost
     - Pattern
@@ -116,4 +115,6 @@ It has the for of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
 If the host contains the wildcard, it is assumed to be a publisher, otherwise a pusher.
 If the publisher needs to bind on a specific interface, the type must be explicitly specified.
+If not specidifed, a pusher is assumed to connect and a publisher is assumed to bind to the address,
+unless the address contains a wildcard, in which case it always binds.
 
