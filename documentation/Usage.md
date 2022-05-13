@@ -24,13 +24,16 @@ ZMQDriver
                     int priority, int stackSize)
 ```
 
-ZMQDriver listens for incoming data. By ZeroMQ patterns, this can be either a puller or a subscriber.
+ZMQDriver pulls data in. By ZeroMQ patterns, this can be either a puller or a subscriber.
 The *serverHost* parameter of *ZMQDriverConfig* is to specify the server address and pattern.
+It has the form of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
-| Pattern   |           serverHost                             |
-|-----------|--------------------------------------------------|
-| PUB/SUB   | "tcp://127.0.0.1:5432"                           |
-| PUSH/PULL | "tcp://*:5432" <br /> "tcp://127.0.01:4532 PULL" |
+|           serverHost                              | Pattern   |  Socket  |
+|---------------------------------------------------|-----------|----------|
+| "tcp://127.0.0.1:5432"                            | PUB/SUB   |  Connect |
+| "tcp://127.0.0.1:5432 SUB BIND"                   | PUB/SUB   |  Bind    |
+| "tcp://*:5432" <br /> "tcp://127.0.0.1:5432 PULL" | PUSH/PULL |  Bind    |
+| "tcp://127.0.0.1:5432 PULL CONNECT"               | PUSH/PULL |  connect |
 
 If the host contains the wildcard, it is assumed to be a puller, otherwise a subscriber.
 If the puller needs to bind on a specific interface, the type must be explicitly specified.
@@ -63,11 +66,14 @@ NDPluginZMQ
 
 NDPluginZMQ pushes data out. By ZeroMQ patterns, this can be either a pusher or a publisher.
 The *serverHost* parameter of *NDZMQConfigure* is to specify the server address and pattern.
+It has the for of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
-| Pattern   |           serverHost                        |
-|-----------|---------------------------------------------|
-| PUB/SUB   | "tcp://*:1234" <br /> "tcp://127.0.0.1 PUB" |
-| PUSH/PULL | "tcp://127.0.0.1:5432"                      |
+|           serverHost                        | Pattern   | Socket  |
+|---------------------------------------------|-----------|---------|
+| "tcp://*:1234" <br /> "tcp://127.0.0.1 PUB" | PUB/SUB   | Bind    |
+| "tcp://127.0.0.1 PUB CONNECT "              | PUB/SUB   | Connect |
+| "tcp://127.0.0.1:5432"                      | PUSH/PULL | Connect |
+| "tcp://127.0.0.1:5432 PUSH BIND"            | PUSH/PULL | Bind    |
 
 If the host contains the wildcard, it is assumed to be a publisher, otherwise a pusher.
 If the publisher needs to bind on a specific interface, the type must be explicitly specified.

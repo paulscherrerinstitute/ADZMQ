@@ -241,6 +241,16 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     callParamCallbacks();
 }
 
+/** Report status of this plugin
+ */
+void NDPluginZMQ::report(FILE *fp, int detail)
+{
+    NDPluginDriver::report(fp,detail);
+    fprintf(fp, "\n");
+    fprintf(fp, "ZMQ plugin %s %s %s\n", this->portName, this->socketBind?"binds at":"connects to", this->serverHost);
+    fprintf(fp, "  Socket type: %s\n", this->socketType==ZMQ_PUB?"PUB":"PUSH");
+}
+
 /** Constructor for NDPluginZMQ; all parameters are simply passed to NDPluginDriver::NDPluginDriver.
   * \param[in] portName The name of the asyn port driver to be created.
   * \param[in] queueSize The number of NDArrays that the input queue for this plugin can hold when
@@ -286,45 +296,71 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
                      )
 {
     const char *functionName = "NDPluginZMQ";
-    char *cp;
-    char type[10] = "";
+    char *cp1, *cp2;
+    char type[10] = ""; /* PUB or PUSH */
+    char borc[10] = ""; /* BIND or CONNECT */
     int rc = 0;
 
-    /* server host in form of "transport://address [PUB|PUSH]"
+    /* Set the plugin type string */
+    setStringParam(NDPluginDriverPluginType, driverName);
+
+    /* server host in form of "transport://address [PUB|PUSH] [BIND|CONNECT]"
      * separate host and type information */
     strcpy(this->serverHost, serverHost);
-    if ((cp=strchr(this->serverHost, ' '))!=NULL) {
-        *cp++ = '\0';
-        strcpy(type, cp);
+    if ((cp1=strchr(this->serverHost, ' '))!=NULL) {
+        *cp1++ = '\0';
+        if ((cp2=strchr(cp1, ' '))!=NULL) {
+            *cp2++ = '\0';
+            strcpy(borc, cp2);
+        }
+        strcpy(type, cp1);
     }
-    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0)
+    /* socket type skipped? */
+    if (strcmp(type, "BIND") == 0 || strcmp(type, "CONNECT") == 0) {
+        strcpy(borc, type);
+        type[0] = '\0';
+    }
+
+    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0) {
         this->socketType = ZMQ_PUB;
-    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0)
+        if (strcmp(borc, "CONNECT") == 0 && strchr(this->serverHost, '*')==NULL)
+            this->socketBind = false;
+        else
+            this->socketBind = true;
+    }
+    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0) {
         this->socketType = ZMQ_PUSH;
+        if (strcmp(borc, "BIND") == 0 || strchr(this->serverHost, '*')!=NULL)
+            this->socketBind = true;
+        else
+            this->socketBind = false;
+    }
     else if (strlen(type) == 0) {
         /* If type is not specified, make a guess.
          * If "*" is found in host address, then it is assumed to be a PUB server type
          * */
         if (strchr(this->serverHost, '*')!=NULL) {
             this->socketType = ZMQ_PUB;
+            this->socketBind = true;
         } else {
             this->socketType = ZMQ_PUSH;
+            if (strcmp(borc, "BIND") == 0)
+                this->socketBind = true;
+            else
+                this->socketBind = false;
         }
     } else {
         fprintf(stderr, "%s: Unsupported socket type %s\n", functionName, type);
         return;
     }
 
-    /* Set the plugin type string */
-    setStringParam(NDPluginDriverPluginType, driverName);
-
     /* Create ZMQ pub socket */
     this->context = zmq_ctx_new();
     this->socket = zmq_socket(context, this->socketType);
 
-    if (this->socketType == ZMQ_PUB) {
+    if (this->socketBind) {
         rc = zmq_bind(this->socket, this->serverHost);
-    } else if (this->socketType == ZMQ_PUSH) {
+    } else {
         rc = zmq_connect(this->socket, this->serverHost);
     }
     if (rc != 0) {
@@ -340,7 +376,7 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
 
 NDPluginZMQ::~NDPluginZMQ()
 {
-    if (this->socketType == ZMQ_PUB)
+    if (this->socketBind)
         zmq_unbind(this->socket, this->serverHost);
     else if (this->socketType == ZMQ_PUSH)
         zmq_disconnect(this->socket, this->serverHost);

@@ -18,6 +18,7 @@ public:
     ~NDPluginZMQ();
 
     /* These methods override those in the base class */
+    virtual void report(FILE *fp, int detail);
     virtual void processCallbacks(NDArray *pArray);
 
 protected:
@@ -29,6 +30,7 @@ private:
     void *socket;
     char serverHost[HOST_NAME_MAX];
     int socketType;
+    bool socketBind;
 };
 
 #define NUM_NDPLUGIN_ZMQ_PARAMS 0

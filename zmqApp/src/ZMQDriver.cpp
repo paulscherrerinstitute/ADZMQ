@@ -59,6 +59,7 @@ private:
     void *socket;  /* main socket to ZMQ server */
     void *stopSocket;/* internal pub socket to stop */
     int socketType;
+    int socketBind;
     epicsEventId startEventId;
 };
 
@@ -323,10 +324,12 @@ void ZMQDriver :: ZMQTask() {
             epicsEventWait(this->startEventId);
             this->lock();
             setIntegerParam(ADNumImagesCounter, 0);
-            if (this->socketType == ZMQ_SUB)
-                zmq_connect(this->socket, this->serverHost);
-            else if (this->socketType == ZMQ_PULL)
+            if (this->socketBind) {
                 zmq_bind(this->socket, this->serverHost);
+            }
+            else {
+                zmq_connect(this->socket, this->serverHost);
+            }
         }
 
         /* We are acquiring. */
@@ -381,10 +384,10 @@ void ZMQDriver :: ZMQTask() {
             (imageMode == ADImageSingle) ||
             ((imageMode == ADImageMultiple) &&
              (numImagesCounter >= numImages))) {
-            if (this->socketType == ZMQ_SUB)
-                zmq_disconnect(this->socket, this->serverHost);
-            else if (this->socketType == ZMQ_PULL)
+            if (this->socketBind)
                 zmq_unbind(this->socket, this->serverHost);
+            else
+                zmq_disconnect(this->socket, this->serverHost);
             setIntegerParam(ADAcquire, 0);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
                   "%s:%s: acquisition completed\n", driverName, functionName);
@@ -405,7 +408,17 @@ static void shutdown (void* arg) {
 
 ZMQDriver :: ~ZMQDriver() {
 
-    if (this->socketType == ZMQ_SUB) {
+    if (this->socketBind) {
+        /* stop if socket is blocked in receiving */
+        zmq_send(stopSocket, "STOP", 4, 0);
+        epicsThreadSleep(1);
+        /* disconnect stop socket */
+        zmq_disconnect(stopSocket, this->stopHost);
+        zmq_close(stopSocket);
+        /* close socket */
+        zmq_unbind(socket, serverHost);
+        zmq_close(socket);
+    } else {
         /* stop if socket is blocked in receiving */
         zmq_send(stopSocket, "STOP", 4, 0);
         epicsThreadSleep(1);
@@ -416,16 +429,6 @@ ZMQDriver :: ~ZMQDriver() {
         /* close stop socket server */
         zmq_unbind(stopSocket, this->stopHost);
         zmq_close(stopSocket);
-    } else if (this->socketType == ZMQ_PULL) {
-        /* stop if socket is blocked in receiving */
-        zmq_send(stopSocket, "STOP", 4, 0);
-        epicsThreadSleep(1);
-        /* disconnect stop socket */
-        zmq_disconnect(stopSocket, this->stopHost);
-        zmq_close(stopSocket);
-        /* close socket */
-        zmq_unbind(socket, serverHost);
-        zmq_close(socket);
     }
 
     zmq_ctx_destroy(context);
@@ -485,16 +488,15 @@ asynStatus ZMQDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
   */
 void ZMQDriver::report(FILE *fp, int details)
 {
-    fprintf(fp, "ZMQ Driver %s\n", this->portName);
+    fprintf(fp, "ZMQ driver %s %s %s\n", this->portName, this->socketBind?"binds at":"connects to", this->serverHost);
+    fprintf(fp, "  Socket type: %s\n", this->socketType==ZMQ_SUB?"SUB":"PULL");
+    fprintf(fp, "  Stop host:   %s\n", this->stopHost);
+
     if (details > 0) {
         int nx, ny, dataType;
         getIntegerParam(ADSizeX, &nx);
         getIntegerParam(ADSizeY, &ny);
         getIntegerParam(NDDataType, &dataType);
-        fprintf(fp, "  Server host:       %s\n", this->serverHost);
-        fprintf(fp, "  Socket type:       %d\n", this->socketType);
-        if (this->socketType == ZMQ_SUB)
-        fprintf(fp, "  Stop host:         %s\n", this->stopHost);
         fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
         fprintf(fp, "  Data type:         %d\n", dataType);
     }
@@ -535,33 +537,78 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
 {
     int status = asynSuccess;
-    static const char *functionName = "zmq";
-    char *cp;
-    char type[10] = "";
+    static const char *functionName = "ZMQDriver";
+    char *cp1, *cp2;
+    char type[10] = ""; /* PUB or PUSH */
+    char borc[10] = ""; /* BIND or CONNECT */
 
-    /* server host in form of "transport://address [SUB|PULL]"
+    /* server host in form of "transport://address [SUB|PULL] [BIND|CONNECT]"
      * separate host and type information */
     strcpy(this->serverHost, serverHost);
-    if ((cp=strchr(this->serverHost, ' '))!=NULL) {
-        *cp++ = '\0';
-        strcpy(type, cp);
+    if ((cp1=strchr(this->serverHost, ' '))!=NULL) {
+        *cp1++ = '\0';
+        if ((cp2=strchr(cp1, ' '))!=NULL) {
+            *cp2++ = '\0';
+            strcpy(borc, cp2);
+        }
+        strcpy(type, cp1);
     }
-    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0)
+    /* socket type skipped? */
+    if (strcmp(type, "BIND") == 0 || strcmp(type, "CONNECT") == 0) {
+        strcpy(borc, type);
+        type[0] = '\0';
+    }
+
+    if (strcmp(type, "SUB") == 0 || strcmp(type, "PUB") == 0) {
         this->socketType = ZMQ_SUB;
-    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0)
+        if (strcmp(borc, "BIND") == 0 || strchr(this->serverHost, '*')!=NULL)
+            this->socketBind = true;
+        else
+            this->socketBind = false;
+    }
+    else if (strcmp(type, "PULL") == 0 || strcmp(type, "PUSH") == 0) {
         this->socketType = ZMQ_PULL;
+        if (strcmp(borc, "CONNECT") == 0 && strchr(this->serverHost, '*')==NULL)
+            this->socketBind = false;
+        else
+            this->socketBind = true;
+    }
     else if (strlen(type) == 0) {
         /* If type is not specified, make a guess.
          * If "*" is found in host address, then it is assumed to be a PULL server type
          * */
         if (strchr(this->serverHost, '*')!=NULL) {
             this->socketType = ZMQ_PULL;
+            this->socketBind = true;
         } else {
             this->socketType = ZMQ_SUB;
+            if (strcmp(borc, "BIND") == 0)
+                this->socketBind = true;
+            else
+                this->socketBind = false;
         }
     } else {
         fprintf(stderr, "%s: Unsupported socket type %s\n", functionName, type);
         return;
+    }
+
+    /* Decide stopSocket address */
+    if (this->socketBind) {
+        char *p = this->stopHost;
+        char *q = this->serverHost;
+
+        while (*q) {
+            if (*q == '*') {
+                strncpy(p, "127.0.0.1", 9);
+                p += 9;
+                q ++;
+            } else
+                *p++ = *q++;
+        }
+        *p = '\0';
+
+    } else {
+        sprintf(this->stopHost, "inproc://%s", portName);
     }
 
     /* Set some default values for parameters */
@@ -588,34 +635,24 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
         /* create the pub socket to disconnect from server */
         this->stopSocket = zmq_socket(this->context, ZMQ_PUB);
-        sprintf(this->stopHost, "inproc://%s", portName);
-        int rc = zmq_bind(this->stopSocket, this->stopHost);
-        if (rc != 0) {
-            fprintf(stderr, "%s: unable to find a free port, %s\n",
-                    functionName,
-                    zmq_strerror(zmq_errno()));
-                return;
-        }
-        /* connect to the stop pub server */
-        zmq_connect(this->socket, stopHost);
+
+       /* filter the message from the stop pub server */
         zmq_setsockopt(this->socket, ZMQ_SUBSCRIBE, "STOP", 4);
     } else if (this->socketType == ZMQ_PULL) {
         /* create the push socket to disconnect from server */
         this->stopSocket = zmq_socket(this->context, ZMQ_PUSH);
-        char *p = this->stopHost;
-        char *q = this->serverHost;
+    }
 
-        while (*q) {
-            if (*q == '*') {
-                strncpy(p, "127.0.0.1", 9);
-                p += 9;
-                q ++;
-            } else
-                *p++ = *q++;
-        }
-        *p = '\0';
-
+    if (this->socketBind) {
         zmq_connect(this->stopSocket, this->stopHost);
+    } else {
+        if (zmq_bind(this->stopSocket, this->stopHost)) {
+            fprintf(stderr, "%s: unable to find a free port, %s\n",
+                functionName,
+                zmq_strerror(zmq_errno()));
+            return;
+        }
+        zmq_connect(this->socket, this->stopHost);
     }
 
     /* Create the epicsEvents for signaling to the acquisition task when acquisition starts */
