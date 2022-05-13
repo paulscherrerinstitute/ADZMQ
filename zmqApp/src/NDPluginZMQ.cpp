@@ -68,6 +68,14 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
             case NDAttrUInt32:
                 sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt32*)value);
                 break;
+#if ADCORE_VERSION >= 3
+            case NDAttrInt64:
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsInt64*)value);
+                break;
+            case NDAttrUInt64:
+                sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt64*)value);
+                break;
+#endif
             case NDAttrFloat32:
                 sjson << "\"" << pAttr->getName() << "\":" << std::setprecision(9) << *((epicsFloat32*)value);
                 break;
