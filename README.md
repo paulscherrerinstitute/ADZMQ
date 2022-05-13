@@ -9,10 +9,8 @@ This project attempts to integrate ZeroMQ with areaDetector framework, in two fo
 The ZeroMQ message format is detailed [here](https://github.com/datastreaming/htypes/blob/master/array-1.0.md).
 
 
-Documentation
--------------
-[Configuration](https://paulscherrerinstitute.github.io/ADZMQ/ADZMQ.html)
-
+* [Documentation](https://paulscherrerinstitute.github.io/ADZMQ/ADZMQ.html)
+* [Release notes](RELEASE.md)
 
 Build
 -----
