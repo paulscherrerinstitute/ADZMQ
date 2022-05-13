@@ -130,6 +130,20 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
         case NDUInt32:
             type = "uint32";
             break;
+#if ADCORE_VERSION >= 3
+        case NDInt64:
+            type = "int64";
+            break;
+        case NDUInt64:
+            type = "uint64";
+            break;
+#endif
+        case NDFloat32:
+            type = "float32";
+            break;
+        case NDFloat64:
+            type = "float64";
+            break;
         default:
             asynPrint(pasynUserSelf, ASYN_TRACE_WARNING,
                     "%s::%s Data type not supported %d\n",
