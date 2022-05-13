@@ -77,6 +77,8 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
             case NDAttrString:
                 sjson << "\"" << pAttr->getName() << "\":" << "\"" << (char*)value << "\"";
                 break;
+            case NDAttrUndefined:
+                sjson << "\"" << pAttr->getName() << "\":\"Undefined\"";
             default:
                 break;
         }
