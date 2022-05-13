@@ -112,9 +112,9 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
     JSONArray shape = root[L"shape"]->AsArray();
     if (shape.size() > ND_ARRAY_MAX_DIMS)
         break;
-    info.ndims = shape.size();
+    info.ndims = (int)shape.size();
     for (int i=0; i<(int)shape.size(); i++) {
-        info.dims[i] = shape[i]->AsNumber();
+        info.dims[i] = (int)shape[i]->AsNumber();
     }
 
     /* get frame number */
@@ -123,7 +123,7 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
         fprintf(stderr, "Invalid \"frame\" field\n");
         break;
     }
-    info.frame = root[L"frame"]->AsNumber();
+    info.frame = (int)root[L"frame"]->AsNumber();
 
     /* get data type */
     if (root.find(L"type") == root.end() ||
@@ -177,9 +177,9 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
     return info;
 }
 
-asynStatus ZMQDriver :: readData() {
+asynStatus ZMQDriver :: readData()
+{
 
-    int rc;
     zmq_msg_t message;
     int msg_len;
     char header[1024];
@@ -192,7 +192,7 @@ asynStatus ZMQDriver :: readData() {
     const char * functionName = "readData";
 
     /* receive header */
-    rc = zmq_msg_init(&message);
+    zmq_msg_init(&message);
     msg_len = zmq_msg_recv(&message, this->socket, 0);
     if (msg_len == -1) {
         zmq_msg_close(&message);
@@ -217,7 +217,7 @@ asynStatus ZMQDriver :: readData() {
     zmq_msg_close(&message);
 
     /* receive data */
-    rc = zmq_msg_init(&message);
+    zmq_msg_init(&message);
     msg_len = zmq_msg_recv(&message, this->socket, 0);
     if (msg_len == -1) {
         zmq_msg_close(&message);
@@ -244,8 +244,8 @@ asynStatus ZMQDriver :: readData() {
         return asynError;
     }
 
-    ncols = info.dims[0];
-    nrows = info.dims[1] == 0 ? 1 : info.dims[1];
+    ncols = (int)info.dims[0];
+    nrows = info.dims[1] == 0 ? 1 : (int)info.dims[1];
     if (info.ndims == 3)
         colorMode = NDColorModeRGB1;
     else
@@ -265,7 +265,7 @@ asynStatus ZMQDriver :: readData() {
     if ((int)arrayInfo.totalBytes != msg_len) {
         zmq_msg_close(&message);
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-            "%s:%s: received data size %d does not match header info %ul\n",
+            "%s:%s: received data size %d does not match header info %zd\n",
             driverName, functionName, msg_len, arrayInfo.totalBytes);
         return asynError;
     }
@@ -600,7 +600,7 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
         while (*q) {
             if (*q == '*') {
-                strncpy(p, "127.0.0.1", 9);
+                strcpy(p, "127.0.0.1");
                 p += 9;
                 q ++;
             } else
@@ -645,13 +645,13 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
     }
 
     /* socket options from environment variables */
-    if (env=getenv("ZMQ_AFFINITY")) {
+    if ((env=getenv("ZMQ_AFFINITY")) != NULL) {
         int value;
         if (sscanf(env, "%d", &value) == 1) {
             zmq_setsockopt(this->socket, ZMQ_AFFINITY, &value, sizeof(value));
         }
     }
-    if (env=getenv("ZMQ_RCVHWM")) {
+    if ((env=getenv("ZMQ_RCVHWM")) != NULL) {
         int value;
         if (sscanf(env, "%d", &value) == 1) {
             zmq_setsockopt(this->socket, ZMQ_RCVHWM, &value, sizeof(value));
