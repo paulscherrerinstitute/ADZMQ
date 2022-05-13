@@ -41,7 +41,7 @@ The *serverHost* parameter of *ZMQDriverConfig* is to specify the server address
 .. cssclass:: table-bordered table-striped table-hover
 .. flat-table::
   :header-rows: 1
-  :widths: 20 10 70
+  :widths: 70 10 20
 
   * - serverHost
     - Pattern
@@ -95,7 +95,7 @@ The *serverHost* parameter of *NDZMQConfigure* is to specify the server address 
 .. cssclass:: table-bordered table-striped table-hover
 .. flat-table::
   :header-rows: 1
-  :widths: 20 10 70
+  :widths: 70 10 20
 
   * - serverHost
     - Pattern
