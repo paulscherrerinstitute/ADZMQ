@@ -299,6 +299,7 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
     char *cp1, *cp2;
     char type[10] = ""; /* PUB or PUSH */
     char borc[10] = ""; /* BIND or CONNECT */
+    char *env = NULL;
     int rc = 0;
 
     /* Set the plugin type string */
@@ -357,6 +358,20 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
     /* Create ZMQ pub socket */
     this->context = zmq_ctx_new();
     this->socket = zmq_socket(context, this->socketType);
+
+    /* socket options from environment variables */
+    if ((env=getenv("ZMQ_AFFINITY")) != NULL) {
+        int value;
+        if (sscanf(env, "%d", &value) == 1) {
+            zmq_setsockopt(this->socket, ZMQ_AFFINITY, &value, sizeof(value));
+        }
+    }
+    if ((env=getenv("ZMQ_SNDHWM")) != NULL) {
+        int value;
+        if (sscanf(env, "%d", &value) == 1) {
+            zmq_setsockopt(this->socket, ZMQ_SNDHWM, &value, sizeof(value));
+        }
+    }
 
     if (this->socketBind) {
         rc = zmq_bind(this->socket, this->serverHost);

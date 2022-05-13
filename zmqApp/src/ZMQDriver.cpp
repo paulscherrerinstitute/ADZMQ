@@ -541,6 +541,7 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
     char *cp1, *cp2;
     char type[10] = ""; /* PUB or PUSH */
     char borc[10] = ""; /* BIND or CONNECT */
+    char *env = NULL;
 
     /* server host in form of "transport://address [SUB|PULL] [BIND|CONNECT]"
      * separate host and type information */
@@ -641,6 +642,20 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
     } else if (this->socketType == ZMQ_PULL) {
         /* create the push socket to disconnect from server */
         this->stopSocket = zmq_socket(this->context, ZMQ_PUSH);
+    }
+
+    /* socket options from environment variables */
+    if (env=getenv("ZMQ_AFFINITY")) {
+        int value;
+        if (sscanf(env, "%d", &value) == 1) {
+            zmq_setsockopt(this->socket, ZMQ_AFFINITY, &value, sizeof(value));
+        }
+    }
+    if (env=getenv("ZMQ_RCVHWM")) {
+        int value;
+        if (sscanf(env, "%d", &value) == 1) {
+            zmq_setsockopt(this->socket, ZMQ_RCVHWM, &value, sizeof(value));
+        }
     }
 
     if (this->socketBind) {
