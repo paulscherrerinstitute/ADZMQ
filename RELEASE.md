@@ -1,9 +1,7 @@
-ADZMQ Releases
-==============
+# ADZMQ Releases
 
-1.2.0 (Oct. 18, 2021)
----------------------
+## __1.2.0 (Oct. 18, 2021)__
 
-NDPluginZMQ
-~~~~~~~~~~~
+### NDPluginZMQ
+
 * Use zero-copy and DONTWAIT on send
