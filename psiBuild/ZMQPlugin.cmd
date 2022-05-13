@@ -9,9 +9,9 @@
 #       NDArrayAddr)        Address of NDArray source
 
 NDZMQConfigure("NDZMQ$(N=1)", "$(NDZMQ_ADDR)", $(SIZE=20), 0, "$(PORT)", 0)
-dbLoadRecords("NDPluginBase.template","P=$(PREFIX),R=$(RECORD=ZMQ1:),PORT=NDZMQ$(N=1),ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+dbLoadRecords("NDPluginBase.template","P=$(PREFIX),R=$(RECORD=ZMQ$(N=1):),PORT=NDZMQ$(N=1),ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
 
 set_pass0_restoreFile("NDPluginBase_settings$(N=1).sav")
 set_pass1_restoreFile("NDPluginBase_settings$(N=1).sav")
 
-afterInit create_monitor_set,"NDPluginBase_settings.req",30,"P=$(PREFIX),R=$(RECORD=ZMQ1:)","NDPluginBase_settings$(N=1).sav"
+afterInit create_monitor_set,"NDPluginBase_settings.req",30,"P=$(PREFIX),R=$(RECORD=ZMQ$(N=1):)","NDPluginBase_settings$(N=1).sav"
