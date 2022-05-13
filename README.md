@@ -11,7 +11,7 @@ The ZeroMQ message format is detailed [here](https://github.com/datastreaming/ht
 
 Documentation
 -------------
-[Configuration](documentation/Usage.md)
+[Configuration](https://paulscherrerinstitute.github.io/ADZMQ/ADZMQ.html)
 
 
 Build
@@ -81,4 +81,4 @@ frequency is 1 Hz.
    ```
 
 The data flow is illustrated by the following graph,
-![Architecture Overview](documentation/Architecture.png)
+![Architecture Overview](documentation/_static/Architecture.png)

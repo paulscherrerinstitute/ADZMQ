@@ -8,8 +8,8 @@ And the patterns supported are PUB/SUB and PUSH/PULL.
 
 ZMQDriver
 =========
+::
 
-```bash
   # portName    The name of the asyn port driver to be created.
   # serverHost  The address of the ZMQ server, and pattern to be used. transport://address [SUB|PULL].
   # maxBuffers  The maximum number of NDArray buffers that the NDArrayPool for this driver is 
@@ -22,18 +22,32 @@ ZMQDriver
   ZMQDriverConfig(const char *portName, const char *serverHost,
                     int maxBuffers, size_t maxMemory,
                     int priority, int stackSize)
-```
 
 ZMQDriver pulls data in. By ZeroMQ patterns, this can be either a puller or a subscriber.
 The *serverHost* parameter of *ZMQDriverConfig* is to specify the server address and pattern.
 It has the form of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
-|           serverHost                              | Pattern   |  Socket  |
-|---------------------------------------------------|-----------|----------|
-| "tcp://127.0.0.1:5432"                            | PUB/SUB   |  Connect |
-| "tcp://127.0.0.1:5432 SUB BIND"                   | PUB/SUB   |  Bind    |
-| "tcp://*:5432" <br /> "tcp://127.0.0.1:5432 PULL" | PUSH/PULL |  Bind    |
-| "tcp://127.0.0.1:5432 PULL CONNECT"               | PUSH/PULL |  connect |
+.. cssclass:: table-bordered table-striped table-hover
+.. flat-table::
+  :header-rows: 1
+  :widths: 20 10 70
+
+  * - serverHost
+    - Pattern
+    - Socket
+  * - "tcp://127.0.0.1:5432"
+    - PUB/SUB
+    - Connect
+  * - "tcp://127.0.0.1:5432 SUB BIND"
+    - PUB/SUB
+    - Bind
+  * - "tcp://\*:5432", "tcp://127.0.0.1:5432 PULL"
+    - PUSH/PULL
+    - Bind
+  * - "tcp://127.0.0.1:5432 PULL CONNECT"
+    - PUSH/PULL
+    - Connect
+
 
 If the host contains the wildcard, it is assumed to be a puller, otherwise a subscriber.
 If the puller needs to bind on a specific interface, the type must be explicitly specified.
@@ -42,8 +56,8 @@ If the puller needs to bind on a specific interface, the type must be explicitly
 
 NDPluginZMQ
 ===========
+::
 
-```bash
   # portName           The name of the asyn port driver to be created.
   # serverHost         The IP address:port of the ZMQ server to be created.
   # queueSize,         The number of NDArrays that the input queue for this plugin can hold when 
@@ -62,18 +76,31 @@ NDPluginZMQ
                 int maxBuffers, size_t maxMemory,
                 int priority, int stackSize)
 
-```
 
 NDPluginZMQ pushes data out. By ZeroMQ patterns, this can be either a pusher or a publisher.
 The *serverHost* parameter of *NDZMQConfigure* is to specify the server address and pattern.
 It has the for of *transport://address [SUB|PULL] [BIND|CONNECT]*
 
-|           serverHost                        | Pattern   | Socket  |
-|---------------------------------------------|-----------|---------|
-| "tcp://*:1234" <br /> "tcp://127.0.0.1 PUB" | PUB/SUB   | Bind    |
-| "tcp://127.0.0.1 PUB CONNECT "              | PUB/SUB   | Connect |
-| "tcp://127.0.0.1:5432"                      | PUSH/PULL | Connect |
-| "tcp://127.0.0.1:5432 PUSH BIND"            | PUSH/PULL | Bind    |
+.. cssclass:: table-bordered table-striped table-hover
+.. flat-table::
+  :header-rows: 1
+  :widths: 20 10 70
+
+  * - serverHost
+    - Pattern
+    - Socket
+  * - "tcp://\*:1234" or "tcp://127.0.0.1 PUB"
+    - PUB/SUB
+    - Bind
+  * - "tcp://127.0.0.1 PUB CONNECT"
+    - PUB/SUB
+    - Connect
+  * - "tcp://127.0.0.1:5432"
+    - PUSH/PULL
+    - Connect
+  * - "tcp://127.0.0.1:5432 PUSH BIND"
+    - PUSH/PULL
+    - Bind
 
 If the host contains the wildcard, it is assumed to be a publisher, otherwise a pusher.
 If the publisher needs to bind on a specific interface, the type must be explicitly specified.
