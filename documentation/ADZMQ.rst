@@ -1,13 +1,25 @@
-ZeroMQ Basics
-=============
+ADZMQ
+=====
+
+:author: Xiaoqiang Wang
+
+Introduction
+------------
 
 In ZeroMQ patterns, the message flow can be either uni- or bi-directional.
 This project currently considers only uni-directional message flow.
 And the patterns supported are PUB/SUB and PUSH/PULL.
 
+* ZMQDriver pulls data from a ZeroMQ server and generates NDArray.
+* NDPluginZMQ publishes NDArray as ZeroMQ server.
+
+The ZeroMQ message format is detailed `here <https://github.com/datastreaming/htypes/blob/master/array-1.0.md>`_.
+
+.. contents:: Contents
+
 
 ZMQDriver
-=========
+---------
 ::
 
   # portName    The name of the asyn port driver to be created.
@@ -55,7 +67,7 @@ If the puller needs to bind on a specific interface, the type must be explicitly
 
 
 NDPluginZMQ
-===========
+-----------
 ::
 
   # portName           The name of the asyn port driver to be created.
