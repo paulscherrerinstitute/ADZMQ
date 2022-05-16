@@ -1,6 +1,6 @@
 # ADZMQ Releases
 
-## __1.3.0 (May XX, 2022)__
+## __1.3.0 (May 16, 2022)__
 
 ### ADZMQ
 * Option to specify whether to bind or connect in the *serverHost* argument of the configuration command.
