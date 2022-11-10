@@ -6,7 +6,12 @@ include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC += ADZMQ
 
+USR_CPPFLAGS += -DBUILDING_ADZMQ_API
+
 DBD += ADZMQSupport.dbd
+
+ADZMQ_INC  += ADZMQAPI.h
+ADZMQ_INC  += NDPluginZMQ.h
 
 ADZMQ_SRCS += ZMQDriver.cpp
 ADZMQ_SRCS += NDPluginZMQ.cpp

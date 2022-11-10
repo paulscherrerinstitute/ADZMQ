@@ -8,6 +8,11 @@ ARCH_FILTER = %-x86_64 win%
 # SL6-x86_64 -> linux-x86_64
 ARCH = linux-$(word 2,$(subst -, , $(T_A)))
 
+USR_CPPFLAGS += -DBUILDING_ADZMQ_API
+
+HEADERS += ../zmqApp/src/ADZMQAPI.h
+HEADERS += ../zmqApp/src/NDPluginZMQ.h
+
 SOURCES += ../zmqApp/src/ZMQDriver.cpp
 SOURCES += ../zmqApp/src/JSON.cpp 
 SOURCES += ../zmqApp/src/JSONValue.cpp

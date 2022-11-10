@@ -31,6 +31,44 @@ void free_NDArray(void *data, void *hint)
     ((NDArray *)hint)->release();
 }
 
+/** Helper function to send a message with copy.
+ */
+bool NDPluginZMQ::send(const char *message, size_t length, bool more)
+{
+    zmq_msg_t msg;
+    zmq_msg_init_size(&msg, length);
+    memcpy(zmq_msg_data(&msg), message, length);
+    int rc = zmq_msg_send(&msg, this->socket, (more?0:ZMQ_SNDMORE)|ZMQ_DONTWAIT);
+    if (rc == -1) {
+        zmq_msg_close(&msg);
+        return false;
+    }
+    return true;
+}
+
+bool NDPluginZMQ::send(const std::string message, bool more)
+{
+    return this->send(message.c_str(), message.length(), more);
+}
+
+bool NDPluginZMQ::send(NDArray *pArray, bool more)
+{
+    NDArrayInfo_t arrayInfo;
+    pArray->getInfo(&arrayInfo);
+
+    pArray->reserve();
+    zmq_msg_t msg;
+    zmq_msg_init_data(&msg, pArray->pData, arrayInfo.totalBytes, free_NDArray, pArray);
+    int rc = zmq_msg_send(&msg, this->socket, ZMQ_DONTWAIT);
+    /* ZeroMQ ensures it sends none or all message parts, so it is unlikely to error only on the 2nd part */
+    if (rc == -1) {
+        zmq_msg_close(&msg);
+        return false;
+    }
+
+    return true;
+}
+
 /** Helper function to convert NDAttributeList to JSON object
  * \param[in] pAttributeList The NDAttributeList.
  */
@@ -171,26 +209,15 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
         << "}";
 
     /* Send header*/
-    std::string msg = header.str();
-    zmq_msg_t msg_header;
-    zmq_msg_init_size(&msg_header, msg.length());
-    memcpy(zmq_msg_data(&msg_header), msg.c_str(), msg.length());
-    int rc = zmq_msg_send(&msg_header, this->socket, ZMQ_SNDMORE|ZMQ_DONTWAIT);
-    if (rc == -1) {
-        zmq_msg_close(&msg_header);
+    if (! this->send(header.str(), true)) {
         return false;
-    } else {
-        /* Send data */
-        pArray->reserve();
-        zmq_msg_t msg_data;
-        zmq_msg_init_data(&msg_data, pArray->pData, arrayInfo.totalBytes, free_NDArray, pArray);
-        int rc = zmq_msg_send(&msg_data, this->socket, ZMQ_DONTWAIT);
-        /* ZeroMQ ensures it sends none or all message parts, so it is unlikely to error only on the 2nd part */
-        if (rc == -1) {
-            zmq_msg_close(&msg_data);
-            return false;
-        }
     }
+
+    /* Send data */
+    if (! this->send(pArray, false)) {
+        return false;
+    }
+
     return true;
 }
 
