@@ -50,7 +50,7 @@ while True:
     data = numpy.random.random_integers(0, 255, (rows, cols)).astype(numpy.uint8)
     data[:50,:50] = 255
     # send header
-    header = header_t % (cols, rows, data.dtype, frame)
+    header = header_t % (rows, cols, data.dtype, frame)
     sock.send_string(header, zmq.SNDMORE)
     # send data
     sock.send(data)
