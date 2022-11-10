@@ -38,7 +38,7 @@ bool NDPluginZMQ::send(const char *message, size_t length, bool more)
     zmq_msg_t msg;
     zmq_msg_init_size(&msg, length);
     memcpy(zmq_msg_data(&msg), message, length);
-    int rc = zmq_msg_send(&msg, this->socket, (more?0:ZMQ_SNDMORE)|ZMQ_DONTWAIT);
+    int rc = zmq_msg_send(&msg, this->socket, (more?ZMQ_SNDMORE:0)|ZMQ_DONTWAIT);
     if (rc == -1) {
         zmq_msg_close(&msg);
         return false;
@@ -59,7 +59,7 @@ bool NDPluginZMQ::send(NDArray *pArray, bool more)
     pArray->reserve();
     zmq_msg_t msg;
     zmq_msg_init_data(&msg, pArray->pData, arrayInfo.totalBytes, free_NDArray, pArray);
-    int rc = zmq_msg_send(&msg, this->socket, ZMQ_DONTWAIT);
+    int rc = zmq_msg_send(&msg, this->socket, (more?ZMQ_SNDMORE:0)|ZMQ_DONTWAIT);
     /* ZeroMQ ensures it sends none or all message parts, so it is unlikely to error only on the 2nd part */
     if (rc == -1) {
         zmq_msg_close(&msg);
