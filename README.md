@@ -6,7 +6,7 @@ This project attempts to integrate ZeroMQ with areaDetector framework, in two fo
 * a driver pulls data from a ZeroMQ server and generates NDArray.
 * a plugin publishes NDArray as ZeroMQ server.
 
-The ZeroMQ message format is detailed [here](https://github.com/datastreaming/htypes/blob/master/array-1.0.md).
+The ZeroMQ message format is detailed [here](https://github.com/paulscherrerinstitute/htypes/blob/master/array-1.0.md).
 
 
 * [Documentation](https://paulscherrerinstitute.github.io/ADZMQ/ADZMQ.html)

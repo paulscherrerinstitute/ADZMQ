@@ -13,7 +13,7 @@ And the patterns supported are PUB/SUB and PUSH/PULL.
 * ZMQDriver pulls data from a ZeroMQ server and generates NDArray.
 * NDPluginZMQ publishes NDArray as ZeroMQ server.
 
-The ZeroMQ message format is detailed `here <https://github.com/datastreaming/htypes/blob/master/array-1.0.md>`_.
+The ZeroMQ message format is detailed `here <https://github.com/paulscherrerinstitute/htypes/blob/master/array-1.0.md>`_.
 
 .. contents:: Contents
 
