@@ -197,7 +197,7 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
     }
     shape << ']';
 
-    header << "{\"htype\":[\"array-1.0\"], "
+    header << "{\"htype\":\"array-1.0\", "
         << "\"type\":" << "\"" << type << "\", "
         << "\"shape\":" << shape.str() << ", "
         << "\"frame\":" << pArray->uniqueId << ", "

@@ -92,13 +92,13 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
 
     /* check htype, only "array-1.0" supported */
     if (root.find(L"htype") == root.end() ||
-            !root[L"htype"]->IsArray()) {
+            !root[L"htype"]->IsString()) {
 
         fprintf(stderr, "Invalid \"htype\" field\n");
         break;
     }
-    JSONArray htype = root[L"htype"]->AsArray();
-    if (htype[0]->AsString() != L"array-1.0") {
+    std::wstring htype = root[L"htype"]->AsString();
+    if (htype != L"array-1.0") {
         fprintf(stderr, "\"htype\" != \"array-1.0\" \n");
         break;
     }
