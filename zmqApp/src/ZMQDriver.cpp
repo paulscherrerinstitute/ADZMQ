@@ -114,7 +114,8 @@ ChunkInfo parseHeader(const char *msg, NDAttributeList& attributeList) {
         break;
     info.ndims = (int)shape.size();
     for (int i=0; i<(int)shape.size(); i++) {
-        info.dims[i] = (int)shape[i]->AsNumber();
+        /* NDArray dims assumes x,y,z order but shape is in z,y,x */
+        info.dims[info.ndims-i-1] = (int)shape[i]->AsNumber();
     }
 
     /* get frame number */
