@@ -1,5 +1,20 @@
 # ADZMQ Releases
 
+## __1.4.0 (Dec 20, 2022)__
+
+* The *htype* field was mistakenly treated as an array (["array-1.0"]) since the beginning.
+  Now it is a string "array-1.0".
+* The *shape* field was in the order of x,y,z, which is specified by
+  [chunk-1.0](https://github.com/paulscherrerinstitute/htypes/blob/master/chunk-1.0.md).
+  After switching to [array-1.0](https://github.com/paulscherrerinstitute/htypes/blob/master/array-1.0.md),
+  which assumes z,y,x order, the order is now reversed.
+
+### NDPluginZMQ
+
+* Class `NDPluginZMQ` now can be subclassed to support custom protocols. Any subclass needs only implementing
+  the `sendNDArray` method. And `NDPluginZMQ` provides helper methods `send(std::string)` and `send(NDArray*)` for
+  subclasses so that they do not depend on zmq directly.
+
 ## __1.3.0 (May 16, 2022)__
 
 ### ADZMQ
