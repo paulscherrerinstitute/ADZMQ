@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>ADZMQ &#8212; ADZMQ 1.1.2-28-g603af14 documentation</title>
+    <title>ADZMQ &#8212; ADZMQ 1.3.0-7-g33b5a0c documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
 <meta charset='utf-8'>
@@ -36,7 +38,7 @@
         </button>
         <a class="navbar-brand" href="#">
           ADZMQ</a>
-        <span class="navbar-text navbar-version pull-left"><b>1.1.2-28-g603af14</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>1.3.0-7-g33b5a0c</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -109,14 +111,14 @@
     <div class="body col-md-12 content" role="main">
       
   <section id="adzmq">
-<h1><a class="toc-backref" href="#id1">ADZMQ</a><a class="headerlink" href="#adzmq" title="Permalink to this headline">¶</a></h1>
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">ADZMQ</a><a class="headerlink" href="#adzmq" title="Permalink to this heading">¶</a></h1>
 <dl class="field-list simple">
-<dt class="field-odd">author</dt>
+<dt class="field-odd">author<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Xiaoqiang Wang</p>
 </dd>
 </dl>
 <section id="introduction">
-<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>In ZeroMQ patterns, the message flow can be either uni- or bi-directional.
 This project currently considers only uni-directional message flow.
 And the patterns supported are PUB/SUB and PUSH/PULL.</p>
@@ -124,8 +126,8 @@ And the patterns supported are PUB/SUB and PUSH/PULL.</p>
 <li><p>ZMQDriver pulls data from a ZeroMQ server and generates NDArray.</p></li>
 <li><p>NDPluginZMQ publishes NDArray as ZeroMQ server.</p></li>
 </ul>
-<p>The ZeroMQ message format is detailed <a class="reference external" href="https://github.com/datastreaming/htypes/blob/master/array-1.0.md">here</a>.</p>
-<div class="contents topic" id="contents">
+<p>The ZeroMQ message format is detailed <a class="reference external" href="https://github.com/paulscherrerinstitute/htypes/blob/master/array-1.0.md">here</a>.</p>
+<nav class="contents" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#adzmq" id="id1">ADZMQ</a></p>
@@ -136,10 +138,10 @@ And the patterns supported are PUB/SUB and PUSH/PULL.</p>
 </ul>
 </li>
 </ul>
-</div>
+</nav>
 </section>
 <section id="zmqdriver">
-<h2><a class="toc-backref" href="#id3">ZMQDriver</a><a class="headerlink" href="#zmqdriver" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">ZMQDriver</a><a class="headerlink" href="#zmqdriver" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># portName    The name of the asyn port driver to be created.</span>
 <span class="c1"># serverHost  The address of the ZMQ server. transport://address [SUB|PULL] [BIND|CONNECT].</span>
 <span class="c1"># maxBuffers  The maximum number of NDArray buffers that the NDArrayPool for this driver is</span>
@@ -158,9 +160,9 @@ And the patterns supported are PUB/SUB and PUSH/PULL.</p>
 The <em>serverHost</em> parameter of <em>ZMQDriverConfig</em> is to specify the server address and pattern.</p>
 <table class="table-bordered table-striped table-hover docutils align-default">
 <colgroup>
-<col style="width: 70%" />
-<col style="width: 10%" />
-<col style="width: 20%" />
+<col style="width: 70.0%" />
+<col style="width: 10.0%" />
+<col style="width: 20.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>serverHost</p></th>
@@ -193,7 +195,7 @@ If not specidifed, a subscriber is assumed to connect and a puller is assumed to
 unless the address contains a wildcard, in which case it always binds.</p>
 </section>
 <section id="ndpluginzmq">
-<h2><a class="toc-backref" href="#id4">NDPluginZMQ</a><a class="headerlink" href="#ndpluginzmq" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">NDPluginZMQ</a><a class="headerlink" href="#ndpluginzmq" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># portName           The name of the asyn port driver to be created.</span>
 <span class="c1"># serverHost         The address of the ZMQ server. transport://address [SUB|PULL] [BIND|CONNECT].</span>
 <span class="c1"># queueSize          The number of NDArrays that the input queue for this plugin can hold when</span>
@@ -217,9 +219,9 @@ unless the address contains a wildcard, in which case it always binds.</p>
 The <em>serverHost</em> parameter of <em>NDZMQConfigure</em> is to specify the server address and pattern.</p>
 <table class="table-bordered table-striped table-hover docutils align-default">
 <colgroup>
-<col style="width: 70%" />
-<col style="width: 10%" />
-<col style="width: 20%" />
+<col style="width: 70.0%" />
+<col style="width: 10.0%" />
+<col style="width: 20.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>serverHost</p></th>
@@ -266,7 +268,7 @@ unless the address contains a wildcard, in which case it always binds.</p>
     </p>
     <p>
         &copy; Copyright 2022, Xiaoqiang Wang.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br/>
     </p>
   </div>
 </footer>
