@@ -191,7 +191,7 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
 
     /* NDArray dims assumes x,y,z order but shape is in z,y,x */
     shape << '[';
-    for (int i=pArray->ndims-1; i>=0; i++) {
+    for (int i=pArray->ndims-1; i>=0; i--) {
         shape << pArray->dims[i].size;
         if (i >0)
             shape << ',';
