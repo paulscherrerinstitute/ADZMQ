@@ -2,6 +2,8 @@
 
 ## __1.4.0 (Dec 20, 2022)__
 
+### **Compatiblity breaking changes**
+
 * The *htype* field was mistakenly treated as an array (["array-1.0"]) since the beginning.
   Now it is a string "array-1.0".
 * The *shape* field was in the order of x,y,z, which is specified by
