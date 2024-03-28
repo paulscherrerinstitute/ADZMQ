@@ -32,5 +32,3 @@ USR_LDFLAGS_windows-x64  += ../../zmqApp/zmqSrc/os/windows-x64/libzmq.lib
 SHRLIBS_win32-x86 += ../zmqApp/zmqSrc/os/win32-x86/libzmq.dll
 SHRLIBS_windows-x64 += ../zmqApp/zmqSrc/os/windows-x64/libzmq.dll
 
-TEMPLATES += ../zmqApp/Db/NDPluginZMQ.template
-TEMPLATES += ../zmqApp/Db/NDPluginZMQ_settings.req
