@@ -542,6 +542,8 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
     char *cp1, *cp2;
     char type[10] = ""; /* PUB or PUSH */
     char borc[10] = ""; /* BIND or CONNECT */
+    char zmqVersion[16] = "";
+    int zmqMajor, zmqMinor, zmqPatch;
     char *env = NULL;
 
     /* server host in form of "transport://address [SUB|PULL] [BIND|CONNECT]"
@@ -615,6 +617,9 @@ ZMQDriver::ZMQDriver(const char *portName, const char *serverHost, int maxBuffer
 
     /* Set some default values for parameters */
     status =  setStringParam (ADManufacturer, "ZMQ Driver");
+    zmq_version(&zmqMajor, &zmqMinor, &zmqPatch);
+    epicsSnprintf(zmqVersion, sizeof(zmqVersion), "zeromq %d.%d.%d", zmqMajor, zmqMinor, zmqPatch);
+    status |= setStringParam(ADSDKVersion, zmqVersion);
     if (this->socketType == ZMQ_SUB) {
     status |= setStringParam (ADModel, "ZeroMQ SUB");
     } else if (this->socketType == ZMQ_PULL) {
