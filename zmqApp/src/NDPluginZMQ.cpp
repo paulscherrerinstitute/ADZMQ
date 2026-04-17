@@ -106,14 +106,12 @@ std::string NDPluginZMQ::getAttributesAsJSON(NDAttributeList *pAttributeList)
             case NDAttrUInt32:
                 sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt32*)value);
                 break;
-#if ADCORE_VERSION >= 3
             case NDAttrInt64:
                 sjson << "\"" << pAttr->getName() << "\":" << *((epicsInt64*)value);
                 break;
             case NDAttrUInt64:
                 sjson << "\"" << pAttr->getName() << "\":" << *((epicsUInt64*)value);
                 break;
-#endif
             case NDAttrFloat32:
                 sjson << "\"" << pAttr->getName() << "\":" << std::setprecision(9) << *((epicsFloat32*)value);
                 break;
@@ -168,14 +166,12 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
         case NDUInt32:
             type = "uint32";
             break;
-#if ADCORE_VERSION >= 3
         case NDInt64:
             type = "int64";
             break;
         case NDUInt64:
             type = "uint64";
             break;
-#endif
         case NDFloat32:
             type = "float32";
             break;
@@ -203,9 +199,7 @@ bool NDPluginZMQ::sendNDArray(NDArray *pArray)
         << "\"shape\":" << shape.str() << ", "
         << "\"frame\":" << pArray->uniqueId << ", "
         << "\"timeStamp\":" << std::setprecision(17) << pArray->timeStamp << ", "
-#if ADCORE_VERSION >= 3
         << "\"encoding\":" << "\"" << pArray->codec.name << "\", "
-#endif
         << "\"ndattr\":" << getAttributesAsJSON(pArray->pAttributeList)
         << "}";
 
@@ -239,24 +233,13 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     getIntegerParam(NDArrayCounter, &arrayCounter);
 
     /* Call the base class method */
-#if ADCORE_VERSION >= 3
     NDPluginDriver::beginProcessCallbacks(pArray);
-#else
-    NDPluginDriver::processCallbacks(pArray);
-    /* We always keep the last array so read() can use it.
-     * Release previous one, reserve new one */
-    if (this->pArrays[0]) this->pArrays[0]->release();
-    pArray->reserve();
-    this->pArrays[0] = pArray;
-#endif
 
     this->unlock();
 
-#if ADCORE_VERSION >= 3
     if (throttled(pArray))
         wasThrottled = true;
     else
-#endif
     {
         if (!this->sendNDArray(pArray))
             wasDropped = true;
@@ -264,11 +247,7 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     this->lock();
 
     if (wasThrottled || wasDropped) {
-#if ADCORE_VERSION >= 3
         int reason = NDPluginDriverDroppedOutputArrays;
-#else
-        int reason = NDPluginDriverDroppedArrays;
-#endif
         int droppedOutputArrays;
         getIntegerParam(reason, &droppedOutputArrays);
         if (wasThrottled)
@@ -284,12 +263,7 @@ void NDPluginZMQ::processCallbacks(NDArray *pArray)
     }
 
     /* Update the parameters.  */
-#if ADCORE_VERSION >= 3
     NDPluginDriver::endProcessCallbacks(pArray, true, true);
-#else
-    arrayCounter++;
-    setIntegerParam(NDArrayCounter, arrayCounter);
-#endif
     callParamCallbacks();
 }
 
@@ -336,15 +310,10 @@ NDPluginZMQ::NDPluginZMQ(const char *portName, const char* serverHost, int queue
      * Set autoconnect to 1.  priority and stacksize can be 0, which will use defaults. */
     : NDPluginDriver(portName, queueSize, blockingCallbacks,
                      NDArrayPort, NDArrayAddr, 1,
-#if ADCORE_VERSION < 3
-                     0,
-#endif
                      maxBuffers, maxMemory,
                      asynGenericPointerMask, asynGenericPointerMask,
                      0, 1, priority, stackSize
-#if ADCORE_VERSION >= 3
                     ,1 /* single thread */, true /* compressionAware */
-#endif
                      )
 {
     const char *functionName = "NDPluginZMQ";
@@ -460,11 +429,7 @@ extern "C" int NDZMQConfigure(const char *portName, const char *serverHost, int 
 {
     NDPluginZMQ *pPlugin = new NDPluginZMQ(portName, serverHost, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr,
                       maxBuffers, maxMemory, priority, stackSize);
-#if (ADCORE_VERSION > 2) || (ADCORE_VERSION == 2 && ADCORE_REVISION >= 5)
     return pPlugin->start();
-#else
-    return asynSuccess;
-#endif
 }
 
 /* EPICS iocsh shell commands */
