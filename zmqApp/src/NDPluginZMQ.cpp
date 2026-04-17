@@ -58,7 +58,7 @@ bool NDPluginZMQ::send(NDArray *pArray, bool more)
 
     pArray->reserve();
     zmq_msg_t msg;
-    zmq_msg_init_data(&msg, pArray->pData, arrayInfo.totalBytes, free_NDArray, pArray);
+    zmq_msg_init_data(&msg, pArray->pData, pArray->codec.empty() ? arrayInfo.totalBytes: pArray->compressedSize, free_NDArray, pArray);
     int rc = zmq_msg_send(&msg, this->socket, (more?ZMQ_SNDMORE:0)|ZMQ_DONTWAIT);
     /* ZeroMQ ensures it sends none or all message parts, so it is unlikely to error only on the 2nd part */
     if (rc == -1) {
