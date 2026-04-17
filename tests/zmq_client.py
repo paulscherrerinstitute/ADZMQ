@@ -1,11 +1,17 @@
 from __future__ import print_function
 
+import io
 import sys
 import time
 import zmq
 import numpy
 import json
 import argparse
+
+try:
+    from PIL import Image
+except:
+    Image = None
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--type', dest='stype', default='SUB')
@@ -45,6 +51,15 @@ while True:
     info = json.loads(header)
 
     # receive data
-    data = numpy.frombuffer(sock.recv(), dtype=str(info['type']))
-    data.reshape(info['shape'])
+
+    if info['encoding'] == 'jpeg':
+        data = sock.recv()
+        if Image:
+            data = numpy.array(Image.open(io.BytesIO(data)))
+        else:
+            print('Cannot decode jpeg compressed image without PIL package')
+            break
+    else:
+        data = numpy.frombuffer(sock.recv(), dtype=str(info['type']))
+        data.reshape(info['shape'])
     print(data.sum(),data)
